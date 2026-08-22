@@ -6,6 +6,7 @@
 	import PrivateInfoTab from '$lib/components/employees/tabs/PrivateInfoTab.svelte';
 	import SalaryInfoTab from '$lib/components/employees/tabs/SalaryInfoTab.svelte';
 	import ChatterFeed from '$lib/components/employees/ChatterFeed.svelte';
+	import ProfileEditModal from '$lib/components/employees/ProfileEditModal.svelte';
 	import type { Component } from 'svelte';
 	import {
 		ArrowLeft,
@@ -25,12 +26,13 @@
 		Sparkles,
 		CheckCircle2,
 		Plane,
-		CircleDot
+		CircleDot,
+		Edit3
 	} from '@lucide/svelte';
 
 	let { data }: { data: PageData } = $props();
 
-	const employee = $derived(data.employee);
+	let employee = $derived(data.employee);
 	const manager = $derived(data.manager);
 	const subordinates = $derived(data.subordinates);
 	const presenceStatus = $derived(data.presenceStatus);
@@ -38,6 +40,7 @@
 	type TabKey = 'about' | 'resume' | 'private' | 'salary';
 	let activeTab = $state<TabKey>('about');
 	let copiedId = $state(false);
+	let isEditModalOpen = $state(false);
 
 	function copyId(id: string) {
 		if (!id) return;
@@ -99,6 +102,16 @@
 		<div class="flex items-center gap-2">
 			<button
 				type="button"
+				onclick={() => (isEditModalOpen = true)}
+				class="inline-flex items-center gap-1.5 rounded-xl bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground hover:bg-primary/90 transition-all shadow-2xs cursor-pointer"
+				title="Edit Employee Profile"
+			>
+				<Edit3 class="h-3.5 w-3.5" />
+				<span>Edit Profile</span>
+			</button>
+
+			<button
+				type="button"
 				onclick={() => window.print()}
 				class="inline-flex items-center gap-1.5 rounded-xl border border-border/80 bg-background px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:bg-muted hover:text-foreground transition-all shadow-2xs"
 				title="Print Profile"
@@ -116,6 +129,17 @@
 			</a>
 		</div>
 	</div>
+
+	<!-- Profile Edit Modal -->
+	<ProfileEditModal
+		open={isEditModalOpen}
+		{employee}
+		onClose={() => (isEditModalOpen = false)}
+		onSuccess={(updated) => {
+			employee = updated as any;
+			window.location.reload();
+		}}
+	/>
 
 	<!-- Main Odoo-Style Profile Card -->
 	<section class="rounded-3xl border border-border/80 bg-card p-6 sm:p-8 shadow-xs relative overflow-hidden">
