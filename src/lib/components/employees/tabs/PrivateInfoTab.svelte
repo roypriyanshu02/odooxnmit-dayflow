@@ -6,16 +6,16 @@
 		CreditCard,
 		Building,
 		MapPin,
-		Phone,
-		Mail,
 		Check,
 		Copy,
-		AlertCircle,
 		Eye,
 		EyeOff,
 		HeartHandshake,
 		Fingerprint
 	} from '@lucide/svelte';
+	import * as Card from '$lib/components/ui/card';
+	import { Badge } from '$lib/components/ui/badge';
+	import { Button } from '$lib/components/ui/button';
 
 	interface EmployeePrivateData {
 		id: string;
@@ -55,7 +55,7 @@
 	}
 
 	// Calculate age and format DOB
-	const formattedDob = $derived(() => {
+	const formattedDob = $derived.by(() => {
 		if (!employee.dob) return { formatted: 'Not Provided', age: null };
 		try {
 			const birthDate = new Date(employee.dob);
@@ -77,7 +77,7 @@
 	});
 
 	// Mask account number
-	const maskedAccount = $derived(() => {
+	const maskedAccount = $derived.by(() => {
 		const acc = employee.bankAccountNumber || '';
 		if (!acc) return 'Not Provided';
 		if (showAccount) return acc;
@@ -99,7 +99,7 @@
 
 <div class="space-y-6">
 	<!-- Privacy Banner Header -->
-	<div class="flex items-center justify-between rounded-2xl border border-border/80 bg-muted/30 p-4 sm:p-5 shadow-2xs">
+	<Card.Root class="p-4 sm:p-5 shadow-2xs flex items-center justify-between bg-muted/30">
 		<div class="flex items-center gap-3">
 			<div class="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
 				<Shield class="h-4.5 w-4.5" />
@@ -109,16 +109,16 @@
 				<p class="text-xs text-muted-foreground">Access restricted to authorized HR Officers and Employee Self-Service</p>
 			</div>
 		</div>
-		<div class="hidden sm:flex items-center gap-1.5 rounded-full border border-border bg-background px-3 py-1 text-xs font-semibold text-muted-foreground">
+		<Badge variant="outline" class="hidden sm:flex items-center gap-1.5 bg-background text-xs font-semibold text-muted-foreground">
 			<Lock class="h-3 w-3 text-emerald-500" />
 			<span>Encrypted at Rest</span>
-		</div>
-	</div>
+		</Badge>
+	</Card.Root>
 
 	<!-- Main 2-Column Grid -->
 	<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 		<!-- Card 1: Personal Details -->
-		<div class="rounded-2xl border border-border/80 bg-card p-6 shadow-2xs">
+		<Card.Root class="p-6 shadow-2xs">
 			<div class="flex items-center gap-2.5 mb-5 pb-3 border-b border-border/60">
 				<div class="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400">
 					<User class="h-4 w-4" />
@@ -133,9 +133,9 @@
 				<div class="space-y-1">
 					<span class="text-xs font-medium text-muted-foreground">Date of Birth</span>
 					<div class="text-xs sm:text-sm font-bold text-foreground">
-						{formattedDob().formatted}
-						{#if formattedDob().age}
-							<span class="text-xs font-normal text-muted-foreground ml-1">({formattedDob().age})</span>
+						{formattedDob.formatted}
+						{#if formattedDob.age}
+							<span class="text-xs font-normal text-muted-foreground ml-1">({formattedDob.age})</span>
 						{/if}
 					</div>
 				</div>
@@ -161,10 +161,10 @@
 					</div>
 				</div>
 			</div>
-		</div>
+		</Card.Root>
 
 		<!-- Card 2: Statutory Identification Numbers -->
-		<div class="rounded-2xl border border-border/80 bg-card p-6 shadow-2xs">
+		<Card.Root class="p-6 shadow-2xs">
 			<div class="flex items-center gap-2.5 mb-5 pb-3 border-b border-border/60">
 				<div class="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-400">
 					<Fingerprint class="h-4 w-4" />
@@ -185,9 +185,10 @@
 						</div>
 					</div>
 					{#if employee.panNumber}
-						<button
-							type="button"
-							class="inline-flex items-center gap-1 rounded-lg border border-border bg-background px-2.5 py-1 text-xs font-semibold text-muted-foreground hover:text-foreground transition-all hover:bg-muted"
+						<Button
+							variant="outline"
+							size="xs"
+							class="gap-1 h-7 text-xs"
 							onclick={() => copyToClipboard(employee.panNumber || '', 'pan')}
 							title="Copy PAN"
 						>
@@ -198,7 +199,7 @@
 								<Copy class="h-3.5 w-3.5" />
 								<span class="text-[11px]">Copy</span>
 							{/if}
-						</button>
+						</Button>
 					{/if}
 				</div>
 
@@ -211,9 +212,10 @@
 						</div>
 					</div>
 					{#if employee.uanNumber}
-						<button
-							type="button"
-							class="inline-flex items-center gap-1 rounded-lg border border-border bg-background px-2.5 py-1 text-xs font-semibold text-muted-foreground hover:text-foreground transition-all hover:bg-muted"
+						<Button
+							variant="outline"
+							size="xs"
+							class="gap-1 h-7 text-xs"
 							onclick={() => copyToClipboard(employee.uanNumber || '', 'uan')}
 							title="Copy UAN"
 						>
@@ -224,14 +226,14 @@
 								<Copy class="h-3.5 w-3.5" />
 								<span class="text-[11px]">Copy</span>
 							{/if}
-						</button>
+						</Button>
 					{/if}
 				</div>
 			</div>
-		</div>
+		</Card.Root>
 
 		<!-- Card 3: Bank Details -->
-		<div class="rounded-2xl border border-border/80 bg-card p-6 shadow-2xs">
+		<Card.Root class="p-6 shadow-2xs">
 			<div class="flex items-center gap-2.5 mb-5 pb-3 border-b border-border/60">
 				<div class="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
 					<Building class="h-4 w-4" />
@@ -298,10 +300,10 @@
 					</span>
 				</div>
 			</div>
-		</div>
+		</Card.Root>
 
 		<!-- Card 4: Contact & Emergency Information -->
-		<div class="rounded-2xl border border-border/80 bg-card p-6 shadow-2xs">
+		<Card.Root class="p-6 shadow-2xs">
 			<div class="flex items-center gap-2.5 mb-5 pb-3 border-b border-border/60">
 				<div class="flex h-8 w-8 items-center justify-center rounded-lg bg-pink-500/10 text-pink-600 dark:text-pink-400">
 					<HeartHandshake class="h-4 w-4" />
@@ -336,6 +338,6 @@
 					</div>
 				</div>
 			</div>
-		</div>
+		</Card.Root>
 	</div>
 </div>

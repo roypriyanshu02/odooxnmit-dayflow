@@ -1,19 +1,19 @@
 <script lang="ts">
 	import type { EmployeeFiltersProps } from './types';
-	import type { EmployeeFilter, EmployeeViewMode, Department, EmployeeStatus } from '$lib/types/employee';
+	import type { Department, EmployeeStatus, EmployeeViewMode } from '$lib/types/employee';
 	import {
 		Search,
 		X,
-		SlidersHorizontal,
 		LayoutGrid,
 		List,
 		Plus,
 		RotateCcw,
-		Filter,
-		Building2,
-		Users,
-		Sparkles
+		Building2
 	} from '@lucide/svelte';
+	import { Input } from '$lib/components/ui/input';
+	import { Button } from '$lib/components/ui/button';
+	import { Badge } from '$lib/components/ui/badge';
+	import * as Card from '$lib/components/ui/card';
 
 	let {
 		filters,
@@ -28,7 +28,6 @@
 		],
 		totalCount = 0,
 		filteredCount = 0,
-		isLoading = false,
 		onFilterChange,
 		onReset,
 		onSearchInput,
@@ -136,20 +135,20 @@
 	];
 </script>
 
-<div class="space-y-4 rounded-2xl border border-border/80 bg-card p-4 sm:p-5 shadow-2xs">
+<Card.Root class="p-4 sm:p-5 shadow-2xs space-y-4">
 	<!-- Top Bar: Search Bar, Status Filters, View Mode Toggle, and Actions -->
 	<div class="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
 		<!-- Search Bar with Debounce -->
 		<div class="relative flex-1 max-w-lg">
-			<div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-muted-foreground">
+			<div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">
 				<Search class="h-4 w-4" />
 			</div>
-			<input
+			<Input
 				type="text"
 				bind:value={searchQuery}
 				oninput={handleSearchInput}
 				placeholder="Search by name, role, department, skills, or email..."
-				class="w-full rounded-xl border border-border/80 bg-background/80 py-2 pl-10 pr-9 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground/70 focus:border-primary focus:outline-hidden focus:ring-2 focus:ring-primary/20 transition-all"
+				class="pl-9 pr-9 h-9 text-xs sm:text-sm"
 			/>
 			{#if searchQuery}
 				<button
@@ -166,15 +165,14 @@
 		<!-- Right Controls: Status Selector, View Switcher, Create Action -->
 		<div class="flex flex-wrap items-center gap-2 sm:gap-3">
 			<!-- Status Dropdown / Pill selector -->
-			<div class="flex items-center rounded-xl border border-border/80 bg-background p-1 shadow-2xs">
+			<div class="flex items-center rounded-lg border border-border bg-muted/40 p-0.5 shadow-2xs">
 				{#each statusOptions as opt (opt.value)}
 					{@const active = (filters.status || 'all') === opt.value}
-					<button
-						type="button"
+					<Button
+						variant={active ? 'default' : 'ghost'}
+						size="xs"
 						onclick={() => selectStatus(opt.value as any)}
-						class="flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold transition-all {active
-							? 'bg-primary text-primary-foreground shadow-2xs'
-							: 'text-muted-foreground hover:text-foreground hover:bg-muted/60'}"
+						class="gap-1.5 text-xs font-semibold h-7"
 					>
 						{#if opt.dotClass}
 							<span class="h-2 w-2 rounded-full {opt.dotClass}"></span>
@@ -182,49 +180,47 @@
 							<span class="text-[10px]">{opt.icon}</span>
 						{/if}
 						<span>{opt.label}</span>
-					</button>
+					</Button>
 				{/each}
 			</div>
 
 			<!-- View Mode Switcher: Kanban / Grid vs List -->
-			<div class="flex items-center rounded-xl border border-border/80 bg-background p-1 shadow-2xs" role="group" aria-label="View mode">
-				<button
-					type="button"
+			<div class="flex items-center rounded-lg border border-border bg-muted/40 p-0.5 shadow-2xs" role="group" aria-label="View mode">
+				<Button
+					variant={filters.viewMode !== 'list' ? 'secondary' : 'ghost'}
+					size="xs"
 					onclick={() => setViewMode('kanban')}
-					class="flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold transition-all {filters.viewMode !== 'list'
-						? 'bg-accent text-accent-foreground shadow-2xs'
-						: 'text-muted-foreground hover:text-foreground hover:bg-muted/60'}"
+					class="gap-1.5 text-xs font-semibold h-7"
 					title="Kanban Grid View"
 					aria-pressed={filters.viewMode !== 'list'}
 				>
 					<LayoutGrid class="h-3.5 w-3.5" />
 					<span class="hidden sm:inline">Kanban</span>
-				</button>
+				</Button>
 
-				<button
-					type="button"
+				<Button
+					variant={filters.viewMode === 'list' ? 'secondary' : 'ghost'}
+					size="xs"
 					onclick={() => setViewMode('list')}
-					class="flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold transition-all {filters.viewMode === 'list'
-						? 'bg-accent text-accent-foreground shadow-2xs'
-						: 'text-muted-foreground hover:text-foreground hover:bg-muted/60'}"
+					class="gap-1.5 text-xs font-semibold h-7"
 					title="List View"
 					aria-pressed={filters.viewMode === 'list'}
 				>
 					<List class="h-3.5 w-3.5" />
 					<span class="hidden sm:inline">List</span>
-				</button>
+				</Button>
 			</div>
 
 			<!-- Create Employee Button if provided -->
 			{#if onCreateNew}
-				<button
-					type="button"
+				<Button
+					size="sm"
 					onclick={onCreateNew}
-					class="inline-flex items-center gap-1.5 rounded-xl bg-primary px-3.5 py-2 text-xs font-semibold text-primary-foreground shadow-xs hover:bg-primary/90 transition-all"
+					class="gap-1.5 text-xs font-semibold h-8"
 				>
 					<Plus class="h-3.5 w-3.5" />
 					<span>New Employee</span>
-				</button>
+				</Button>
 			{/if}
 		</div>
 	</div>
@@ -240,15 +236,14 @@
 
 			{#each quickDepartments as dept (dept.value)}
 				{@const active = (filters.department || 'all').toLowerCase() === dept.value.toLowerCase()}
-				<button
-					type="button"
+				<Button
+					variant={active ? 'secondary' : 'outline'}
+					size="xs"
 					onclick={() => selectDepartment(dept.value)}
-					class="shrink-0 rounded-lg px-2.5 py-1 text-xs font-semibold transition-all border {active
-						? 'bg-primary/10 text-primary border-primary/30 font-bold'
-						: 'bg-muted/40 text-muted-foreground border-border/60 hover:bg-muted hover:text-foreground'}"
+					class="shrink-0 h-6 text-xs {active ? 'font-bold bg-primary/10 text-primary border-primary/30' : 'text-muted-foreground'}"
 				>
 					{dept.label}
-				</button>
+				</Button>
 			{/each}
 		</div>
 
@@ -259,16 +254,17 @@
 			</span>
 
 			{#if hasActiveFilters}
-				<button
-					type="button"
+				<Button
+					variant="ghost"
+					size="xs"
 					onclick={handleReset}
-					class="inline-flex items-center gap-1 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:underline transition-colors"
+					class="gap-1 text-xs font-semibold text-destructive hover:text-destructive h-6 p-0"
 					title="Reset all active filters"
 				>
 					<RotateCcw class="h-3 w-3" />
 					<span>Reset Filters</span>
-				</button>
+				</Button>
 			{/if}
 		</div>
 	</div>
-</div>
+</Card.Root>

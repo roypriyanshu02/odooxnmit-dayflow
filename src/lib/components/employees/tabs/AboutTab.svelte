@@ -1,5 +1,4 @@
 <script lang="ts">
-	import type { Certification, WorkHistory } from '$lib/types';
 	import {
 		Building2,
 		UserCheck,
@@ -12,9 +11,11 @@
 		Calendar,
 		Mail,
 		Phone,
-		ArrowUpRight,
-		Layers
+		ArrowUpRight
 	} from '@lucide/svelte';
+	import * as Card from '$lib/components/ui/card';
+	import { Badge } from '$lib/components/ui/badge';
+	import * as Avatar from '$lib/components/ui/avatar';
 
 	interface ManagerInfo {
 		id: string;
@@ -61,7 +62,7 @@
 	} = $props();
 
 	// Formatted join date
-	const formattedJoinDate = $derived(() => {
+	const formattedJoinDate = $derived.by(() => {
 		if (!employee.joinDate) return 'N/A';
 		try {
 			return new Date(employee.joinDate).toLocaleDateString('en-US', {
@@ -81,7 +82,7 @@
 	<!-- Top Section: Bio Summary & Personal Drivers Grid -->
 	<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 		<!-- Main Professional Bio -->
-		<div class="lg:col-span-2 rounded-2xl border border-border/80 bg-card p-6 shadow-2xs">
+		<Card.Root class="lg:col-span-2 p-6 shadow-2xs">
 			<div class="flex items-center gap-2.5 mb-4">
 				<div class="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
 					<BookOpen class="h-4 w-4" />
@@ -125,16 +126,16 @@
 						<span class="font-medium">Joined On</span>
 					</div>
 					<div class="font-semibold text-xs text-foreground truncate">
-						{formattedJoinDate()}
+						{formattedJoinDate}
 					</div>
 				</div>
 			</div>
-		</div>
+		</Card.Root>
 
 		<!-- Passions & Hobbies Card -->
 		<div class="space-y-4">
 			<!-- Passions -->
-			<div class="rounded-2xl border border-border/80 bg-card p-5 shadow-2xs">
+			<Card.Root class="p-5 shadow-2xs">
 				<div class="flex items-center gap-2 mb-2.5">
 					<div class="flex h-7 w-7 items-center justify-center rounded-md bg-pink-500/10 text-pink-600 dark:text-pink-400">
 						<Heart class="h-3.5 w-3.5" />
@@ -144,10 +145,10 @@
 				<p class="text-xs text-muted-foreground leading-relaxed">
 					{employee.aboutPassions || 'Continuous learning, high-impact systems, and engineering excellence.'}
 				</p>
-			</div>
+			</Card.Root>
 
 			<!-- Hobbies -->
-			<div class="rounded-2xl border border-border/80 bg-card p-5 shadow-2xs">
+			<Card.Root class="p-5 shadow-2xs">
 				<div class="flex items-center gap-2 mb-2.5">
 					<div class="flex h-7 w-7 items-center justify-center rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400">
 						<Compass class="h-3.5 w-3.5" />
@@ -157,12 +158,12 @@
 				<p class="text-xs text-muted-foreground leading-relaxed">
 					{employee.aboutHobbies || 'Reading technical literature, outdoor trekking, and photography.'}
 				</p>
-			</div>
+			</Card.Root>
 		</div>
 	</div>
 
 	<!-- Middle Section: Skills Cloud & Specializations -->
-	<div class="rounded-2xl border border-border/80 bg-card p-6 shadow-2xs">
+	<Card.Root class="p-6 shadow-2xs">
 		<div class="flex items-center justify-between mb-4">
 			<div class="flex items-center gap-2.5">
 				<div class="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
@@ -173,20 +174,18 @@
 					<p class="text-xs text-muted-foreground">Verified technical proficiencies and domain capabilities</p>
 				</div>
 			</div>
-			<span class="rounded-full border border-primary/20 bg-primary/5 px-2.5 py-0.5 text-xs font-semibold text-primary">
+			<Badge variant="outline" class="border-primary/20 bg-primary/5 text-primary text-xs font-semibold">
 				{skillsList.length} {skillsList.length === 1 ? 'Skill' : 'Skills'}
-			</span>
+			</Badge>
 		</div>
 
 		{#if skillsList.length > 0}
 			<div class="flex flex-wrap gap-2 pt-2">
 				{#each skillsList as skill}
-					<span
-						class="inline-flex items-center gap-1.5 rounded-lg border border-border/80 bg-muted/40 px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:border-primary/40 hover:bg-primary/5"
-					>
+					<Badge variant="secondary" class="gap-1.5 px-3 py-1 text-xs font-medium">
 						<span class="h-1.5 w-1.5 rounded-full bg-primary/60"></span>
 						<span>{skill}</span>
-					</span>
+					</Badge>
 				{/each}
 			</div>
 		{:else}
@@ -194,12 +193,12 @@
 				<p class="text-xs text-muted-foreground">No specific skills listed for this profile yet.</p>
 			</div>
 		{/if}
-	</div>
+	</Card.Root>
 
 	<!-- Bottom Section: Organizational Hierarchy & Team Structure -->
 	<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 		<!-- Reporting Manager Card -->
-		<div class="rounded-2xl border border-border/80 bg-card p-6 shadow-2xs flex flex-col justify-between">
+		<Card.Root class="p-6 shadow-2xs flex flex-col justify-between">
 			<div>
 				<div class="flex items-center gap-2.5 mb-4">
 					<div class="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400">
@@ -213,11 +212,14 @@
 
 				{#if manager}
 					<div class="flex items-start gap-3.5 rounded-xl border border-border/70 bg-muted/30 p-4 transition-all hover:bg-muted/50">
-						<img
-							src={manager.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(manager.firstName + ' ' + manager.lastName)}&background=6366f1&color=fff`}
-							alt="{manager.firstName} {manager.lastName}"
-							class="h-12 w-12 rounded-xl object-cover ring-2 ring-border/80"
-						/>
+						<Avatar.Root class="h-12 w-12 rounded-xl ring-2 ring-border/80">
+							{#if manager.avatarUrl}
+								<Avatar.Image src={manager.avatarUrl} alt="{manager.firstName} {manager.lastName}" class="rounded-xl" />
+							{/if}
+							<Avatar.Fallback class="rounded-xl bg-primary/10 text-primary font-bold">
+								{manager.firstName?.[0]}{manager.lastName?.[0]}
+							</Avatar.Fallback>
+						</Avatar.Root>
 						<div class="flex-1 min-w-0">
 							<div class="flex items-center justify-between">
 								<h4 class="text-sm font-bold text-foreground truncate">
@@ -255,10 +257,10 @@
 					</div>
 				{/if}
 			</div>
-		</div>
+		</Card.Root>
 
 		<!-- Direct Reports & Team Members -->
-		<div class="rounded-2xl border border-border/80 bg-card p-6 shadow-2xs flex flex-col justify-between">
+		<Card.Root class="p-6 shadow-2xs flex flex-col justify-between">
 			<div>
 				<div class="flex items-center justify-between mb-4">
 					<div class="flex items-center gap-2.5">
@@ -270,9 +272,9 @@
 							<p class="text-xs text-muted-foreground">Subordinate team members</p>
 						</div>
 					</div>
-					<span class="rounded-full border border-border bg-muted/60 px-2 py-0.5 text-[11px] font-semibold text-muted-foreground">
+					<Badge variant="secondary" class="text-[11px] font-semibold">
 						{subordinates.length} {subordinates.length === 1 ? 'member' : 'members'}
-					</span>
+					</Badge>
 				</div>
 
 				{#if subordinates.length > 0}
@@ -283,11 +285,14 @@
 								class="flex items-center justify-between rounded-xl border border-border/60 bg-muted/20 p-2.5 transition-colors hover:border-primary/40 hover:bg-muted/50 group"
 							>
 								<div class="flex items-center gap-2.5 min-w-0">
-									<img
-										src={sub.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(sub.firstName + ' ' + sub.lastName)}&background=8b5cf6&color=fff`}
-										alt="{sub.firstName} {sub.lastName}"
-										class="h-8 w-8 rounded-lg object-cover ring-1 ring-border"
-									/>
+									<Avatar.Root class="h-8 w-8 rounded-lg ring-1 ring-border">
+										{#if sub.avatarUrl}
+											<Avatar.Image src={sub.avatarUrl} alt="{sub.firstName} {sub.lastName}" class="rounded-lg" />
+										{/if}
+										<Avatar.Fallback class="rounded-lg bg-primary/10 text-primary font-bold text-xs">
+											{sub.firstName?.[0]}{sub.lastName?.[0]}
+										</Avatar.Fallback>
+									</Avatar.Root>
 									<div class="min-w-0">
 										<div class="text-xs font-semibold text-foreground truncate group-hover:text-primary transition-colors">
 											{sub.firstName} {sub.lastName}
@@ -305,6 +310,6 @@
 					</div>
 				{/if}
 			</div>
-		</div>
+		</Card.Root>
 	</div>
 </div>

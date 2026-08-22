@@ -2,19 +2,17 @@
 	import { auth } from '$lib/state/auth.svelte';
 	import { calculateSalaryBreakdown, formatINR } from '$lib/utils/salary';
 	import {
-		ReceiptText,
 		ShieldAlert,
 		ShieldCheck,
 		Lock,
 		Coins,
 		TrendingUp,
-		ArrowDownRight,
-		Percent,
 		Building2,
 		Wallet,
-		CheckCircle2,
 		Info
 	} from '@lucide/svelte';
+	import * as Card from '$lib/components/ui/card';
+	import { Badge } from '$lib/components/ui/badge';
 
 	interface EmployeeSalaryData {
 		id: string;
@@ -34,7 +32,7 @@
 
 	// Check permissions
 	// Admin and HR have full access; an employee can only see their own salary if their email matches
-	const canViewSalary = $derived(() => {
+	const canViewSalary = $derived.by(() => {
 		if (auth.isAdmin || auth.isHR) return true;
 		if (auth.user.email && employee.email && auth.user.email.toLowerCase() === employee.email.toLowerCase()) {
 			return true;
@@ -48,9 +46,9 @@
 </script>
 
 <div class="space-y-6">
-	{#if !canViewSalary()}
+	{#if !canViewSalary}
 		<!-- Restricted Access Guard Banner -->
-		<div class="rounded-2xl border border-border/80 bg-card p-8 sm:p-12 text-center shadow-2xs">
+		<Card.Root class="p-8 sm:p-12 text-center shadow-2xs">
 			<div class="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 mb-4">
 				<Lock class="h-8 w-8" />
 			</div>
@@ -58,14 +56,16 @@
 			<p class="mt-2 text-sm text-muted-foreground max-w-md mx-auto leading-relaxed">
 				Salary structures, wage configurations, and itemized deduction breakdown are restricted by role-based access control. Switch to an <span class="font-semibold text-foreground">HR Officer</span> or <span class="font-semibold text-foreground">Admin</span> profile using the top navbar to inspect compensation details.
 			</p>
-			<div class="mt-6 inline-flex items-center gap-2 rounded-full border border-border bg-muted/40 px-4 py-1.5 text-xs font-semibold text-muted-foreground">
-				<ShieldAlert class="h-3.5 w-3.5 text-amber-500" />
-				<span>Access Level: Restricted for {auth.roleTitle}</span>
+			<div class="mt-6 inline-flex items-center gap-2">
+				<Badge variant="outline" class="gap-1.5 px-4 py-1 text-xs font-semibold text-muted-foreground">
+					<ShieldAlert class="h-3.5 w-3.5 text-amber-500" />
+					<span>Access Level: Restricted for {auth.roleTitle}</span>
+				</Badge>
 			</div>
-		</div>
+		</Card.Root>
 	{:else}
 		<!-- Header / Compliance Notice -->
-		<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 rounded-2xl border border-border/80 bg-muted/30 p-5 shadow-2xs">
+		<Card.Root class="p-5 shadow-2xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-muted/30">
 			<div class="flex items-center gap-3">
 				<div class="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400">
 					<Coins class="h-5 w-5" />
@@ -76,16 +76,16 @@
 				</div>
 			</div>
 
-			<div class="inline-flex items-center gap-1.5 self-start sm:self-auto rounded-full border border-border bg-background px-3 py-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+			<Badge variant="outline" class="gap-1.5 self-start sm:self-auto bg-background text-xs font-semibold text-emerald-600 dark:text-emerald-400 px-3 py-1">
 				<ShieldCheck class="h-3.5 w-3.5" />
 				<span>Authorized HR View</span>
-			</div>
-		</div>
+			</Badge>
+		</Card.Root>
 
 		<!-- Summary Top Cards -->
 		<div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
 			<!-- Monthly Wage -->
-			<div class="rounded-2xl border border-border/80 bg-card p-5 shadow-2xs">
+			<Card.Root class="p-5 shadow-2xs">
 				<div class="flex items-center justify-between text-xs font-medium text-muted-foreground mb-2">
 					<span>Configured Monthly Wage</span>
 					<Wallet class="h-4 w-4 text-primary" />
@@ -94,10 +94,10 @@
 					{formatINR(breakdown.monthlyWage)}
 				</div>
 				<p class="text-[11px] text-muted-foreground mt-1">Base monthly rate for standard 30-day month</p>
-			</div>
+			</Card.Root>
 
 			<!-- Gross Monthly Earnings -->
-			<div class="rounded-2xl border border-border/80 bg-card p-5 shadow-2xs">
+			<Card.Root class="p-5 shadow-2xs">
 				<div class="flex items-center justify-between text-xs font-medium text-muted-foreground mb-2">
 					<span>Gross Monthly Salary</span>
 					<TrendingUp class="h-4 w-4 text-emerald-500" />
@@ -106,10 +106,10 @@
 					{formatINR(breakdown.grossSalary)}
 				</div>
 				<p class="text-[11px] text-muted-foreground mt-1">Sum of all basic and allowance components</p>
-			</div>
+			</Card.Root>
 
 			<!-- Annual CTC -->
-			<div class="rounded-2xl border border-border/80 bg-card p-5 shadow-2xs">
+			<Card.Root class="p-5 shadow-2xs">
 				<div class="flex items-center justify-between text-xs font-medium text-muted-foreground mb-2">
 					<span>Annual CTC Package</span>
 					<Building2 class="h-4 w-4 text-purple-500" />
@@ -118,13 +118,13 @@
 					{formatINR(annualCTC)}
 				</div>
 				<p class="text-[11px] text-muted-foreground mt-1">Total annualized company cost (12 months)</p>
-			</div>
+			</Card.Root>
 		</div>
 
 		<!-- Two-Column Itemized Breakdown Grid -->
 		<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 			<!-- Column 1: Earnings Components -->
-			<div class="rounded-2xl border border-border/80 bg-card p-6 shadow-2xs flex flex-col justify-between">
+			<Card.Root class="p-6 shadow-2xs flex flex-col justify-between">
 				<div>
 					<div class="flex items-center justify-between pb-4 mb-4 border-b border-border/60">
 						<div class="flex items-center gap-2">
@@ -191,10 +191,10 @@
 						{formatINR(breakdown.grossSalary)}
 					</span>
 				</div>
-			</div>
+			</Card.Root>
 
 			<!-- Column 2: Deductions & Net Take-Home -->
-			<div class="rounded-2xl border border-border/80 bg-card p-6 shadow-2xs flex flex-col justify-between">
+			<Card.Root class="p-6 shadow-2xs flex flex-col justify-between">
 				<div>
 					<div class="flex items-center justify-between pb-4 mb-4 border-b border-border/60">
 						<div class="flex items-center gap-2">
@@ -255,7 +255,7 @@
 						</div>
 					</div>
 				</div>
-			</div>
+			</Card.Root>
 		</div>
 	{/if}
 </div>

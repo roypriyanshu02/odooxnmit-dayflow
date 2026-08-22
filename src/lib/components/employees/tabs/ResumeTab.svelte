@@ -7,10 +7,10 @@
 		Calendar,
 		Building,
 		CheckCircle2,
-		ExternalLink,
-		FileText,
 		Sparkles
 	} from '@lucide/svelte';
+	import * as Card from '$lib/components/ui/card';
+	import { Badge } from '$lib/components/ui/badge';
 
 	interface EmployeeData {
 		id: string;
@@ -58,7 +58,7 @@
 
 <div class="space-y-8">
 	<!-- Section 1: Professional Experience Timeline -->
-	<div class="rounded-2xl border border-border/80 bg-card p-6 sm:p-8 shadow-2xs">
+	<Card.Root class="p-6 sm:p-8 shadow-2xs">
 		<div class="flex items-center justify-between mb-8">
 			<div class="flex items-center gap-3">
 				<div class="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400">
@@ -69,9 +69,9 @@
 					<p class="text-xs text-muted-foreground">Chronological career history and key milestone achievements</p>
 				</div>
 			</div>
-			<span class="rounded-full border border-border bg-muted/60 px-3 py-1 text-xs font-semibold text-muted-foreground">
+			<Badge variant="secondary" class="text-xs font-semibold px-3 py-1">
 				{historyList.length} {historyList.length === 1 ? 'Position' : 'Positions'}
-			</span>
+			</Badge>
 		</div>
 
 		{#if historyList.length > 0}
@@ -118,12 +118,12 @@
 				<p class="text-xs text-muted-foreground mt-1">This employee's profile is configured as their initial enterprise engagement.</p>
 			</div>
 		{/if}
-	</div>
+	</Card.Root>
 
 	<!-- Section 2: Certifications & Education Grid -->
 	<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 		<!-- Certifications & Licenses -->
-		<div class="rounded-2xl border border-border/80 bg-card p-6 shadow-2xs flex flex-col justify-between">
+		<Card.Root class="p-6 shadow-2xs flex flex-col justify-between">
 			<div>
 				<div class="flex items-center justify-between mb-6">
 					<div class="flex items-center gap-2.5">
@@ -135,9 +135,9 @@
 							<p class="text-xs text-muted-foreground">Industry licenses and verified proficiencies</p>
 						</div>
 					</div>
-					<span class="rounded-full border border-amber-200/60 bg-amber-500/10 px-2.5 py-0.5 text-xs font-semibold text-amber-700 dark:text-amber-300">
+					<Badge variant="outline" class="border-amber-200/60 bg-amber-500/10 text-amber-700 dark:text-amber-300 text-xs font-semibold">
 						{certsList.length} Verified
-					</span>
+					</Badge>
 				</div>
 
 				{#if certsList.length > 0}
@@ -152,9 +152,9 @@
 										<h4 class="text-xs sm:text-sm font-bold text-foreground truncate" title={cert.name}>
 											{cert.name}
 										</h4>
-										<span class="shrink-0 rounded-md border border-border bg-background px-2 py-0.5 text-[11px] font-semibold text-muted-foreground">
+										<Badge variant="outline" class="shrink-0 text-[11px] font-semibold text-muted-foreground">
 											{cert.year}
-										</span>
+										</Badge>
 									</div>
 									<p class="text-xs text-muted-foreground mt-0.5">{cert.issuer}</p>
 									<div class="mt-2 flex items-center gap-1 text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
@@ -172,10 +172,10 @@
 					</div>
 				{/if}
 			</div>
-		</div>
+		</Card.Root>
 
 		<!-- Education & Academics -->
-		<div class="rounded-2xl border border-border/80 bg-card p-6 shadow-2xs flex flex-col justify-between">
+		<Card.Root class="p-6 shadow-2xs flex flex-col justify-between">
 			<div>
 				<div class="flex items-center justify-between mb-6">
 					<div class="flex items-center gap-2.5">
@@ -187,9 +187,9 @@
 							<p class="text-xs text-muted-foreground">University degrees and scholarly achievements</p>
 						</div>
 					</div>
-					<span class="rounded-full border border-purple-200/60 bg-purple-500/10 px-2.5 py-0.5 text-xs font-semibold text-purple-700 dark:text-purple-300">
+					<Badge variant="outline" class="border-purple-200/60 bg-purple-500/10 text-purple-700 dark:text-purple-300 text-xs font-semibold">
 						Degree Verified
-					</span>
+					</Badge>
 				</div>
 
 				<div class="space-y-3">
@@ -199,9 +199,9 @@
 								<h4 class="text-xs sm:text-sm font-bold text-foreground">
 									{edu.degree}
 								</h4>
-								<span class="shrink-0 rounded-md border border-border bg-background px-2 py-0.5 text-[11px] font-semibold text-muted-foreground">
+								<Badge variant="outline" class="shrink-0 text-[11px] font-semibold text-muted-foreground">
 									{edu.period}
-								</span>
+								</Badge>
 							</div>
 
 							<div class="text-xs font-semibold text-primary">{edu.institution}</div>
@@ -217,6 +217,6 @@
 					{/each}
 				</div>
 			</div>
-		</div>
+		</Card.Root>
 	</div>
 </div>

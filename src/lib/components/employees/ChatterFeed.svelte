@@ -10,26 +10,19 @@
 		Send,
 		Paperclip,
 		Clock,
-		Calendar,
-		CalendarCheck,
-		User,
-		UserCheck,
 		RefreshCw,
 		IndianRupee,
 		ShieldCheck,
 		Plane,
-		FileText,
-		Sparkles,
 		X,
 		History,
-		Mail,
-		FileUp,
-		Filter,
-		CheckCircle2,
-		AlertCircle,
-		PhoneCall,
-		Users
+		Mail
 	} from '@lucide/svelte';
+	import * as Card from '$lib/components/ui/card';
+	import { Badge } from '$lib/components/ui/badge';
+	import { Button } from '$lib/components/ui/button';
+	import * as Avatar from '$lib/components/ui/avatar';
+	import { Input } from '$lib/components/ui/input';
 
 	interface Props {
 		entityId: string;
@@ -45,8 +38,7 @@
 		entityType = 'employee',
 		entityName = 'Record',
 		initialEntries = [],
-		canPost = true,
-		compact = false
+		canPost = true
 	}: Props = $props();
 
 	type ChatterTab = 'message' | 'note' | 'activity';
@@ -55,9 +47,16 @@
 	let isSubmitting = $state(false);
 	let isLoading = $state(false);
 	let filterType = $state<'all' | 'note' | 'status_change' | 'field_update'>('all');
-	let entries = $state<ChatterEntry[]>(initialEntries);
+	let entries = $state<ChatterEntry[]>([]);
 	let attachments = $state<{ name: string; size: string }[]>([]);
 	let fileInputRef = $state<HTMLInputElement | null>(null);
+
+	// Synchronize initialEntries safely in Svelte 5
+	$effect(() => {
+		if (initialEntries && initialEntries.length > 0) {
+			entries = initialEntries;
+		}
+	});
 
 	// Activity Form fields (when on 'activity' tab)
 	let activityType = $state<'todo' | 'call' | 'meeting' | 'email' | 'reminder'>('todo');
@@ -95,7 +94,7 @@
 	});
 
 	// Filtered list derived
-	const filteredEntries = $derived(() => {
+	const filteredEntries = $derived.by(() => {
 		if (filterType === 'all') return entries;
 		return entries.filter((e) => e.type === filterType);
 	});
@@ -352,7 +351,7 @@
 	}
 </script>
 
-<div class="rounded-3xl border border-border/80 bg-card p-5 sm:p-6 shadow-xs space-y-6">
+<Card.Root class="p-5 sm:p-6 shadow-2xs space-y-6">
 	<!-- Chatter Header (Odoo Topbar Style) -->
 	<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-border/80">
 		<div class="flex items-center gap-2.5">
@@ -364,9 +363,9 @@
 					<h2 class="text-sm sm:text-base font-bold text-foreground tracking-tight">
 						Chatter & Audit Trail
 					</h2>
-					<span class="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-[11px] font-bold text-muted-foreground">
+					<Badge variant="secondary" class="text-[11px] font-bold px-2 py-0">
 						{entries.length}
-					</span>
+					</Badge>
 				</div>
 				<p class="text-xs text-muted-foreground">
 					Immutable activity timeline and collaborative notes for {entityName}
@@ -376,42 +375,38 @@
 
 		<!-- Filter Pill Switcher -->
 		<div class="flex items-center gap-1.5 self-start sm:self-auto overflow-x-auto text-xs">
-			<button
-				type="button"
+			<Button
+				variant={filterType === 'all' ? 'default' : 'ghost'}
+				size="xs"
 				onclick={() => (filterType = 'all')}
-				class="rounded-lg px-2.5 py-1 font-semibold transition-all {filterType === 'all'
-					? 'bg-primary text-primary-foreground shadow-2xs'
-					: 'bg-muted/50 text-muted-foreground hover:text-foreground hover:bg-muted'}"
+				class="h-7 text-xs font-semibold"
 			>
 				All
-			</button>
-			<button
-				type="button"
+			</Button>
+			<Button
+				variant={filterType === 'note' ? 'default' : 'ghost'}
+				size="xs"
 				onclick={() => (filterType = 'note')}
-				class="rounded-lg px-2.5 py-1 font-semibold transition-all {filterType === 'note'
-					? 'bg-primary text-primary-foreground shadow-2xs'
-					: 'bg-muted/50 text-muted-foreground hover:text-foreground hover:bg-muted'}"
+				class="h-7 text-xs font-semibold"
 			>
 				Notes
-			</button>
-			<button
-				type="button"
+			</Button>
+			<Button
+				variant={filterType === 'field_update' ? 'default' : 'ghost'}
+				size="xs"
 				onclick={() => (filterType = 'field_update')}
-				class="rounded-lg px-2.5 py-1 font-semibold transition-all {filterType === 'field_update'
-					? 'bg-primary text-primary-foreground shadow-2xs'
-					: 'bg-muted/50 text-muted-foreground hover:text-foreground hover:bg-muted'}"
+				class="h-7 text-xs font-semibold"
 			>
 				Updates
-			</button>
-			<button
-				type="button"
+			</Button>
+			<Button
+				variant={filterType === 'status_change' ? 'default' : 'ghost'}
+				size="xs"
 				onclick={() => (filterType = 'status_change')}
-				class="rounded-lg px-2.5 py-1 font-semibold transition-all {filterType === 'status_change'
-					? 'bg-primary text-primary-foreground shadow-2xs'
-					: 'bg-muted/50 text-muted-foreground hover:text-foreground hover:bg-muted'}"
+				class="h-7 text-xs font-semibold"
 			>
 				Transitions
-			</button>
+			</Button>
 		</div>
 	</div>
 
@@ -420,38 +415,35 @@
 		<div class="rounded-2xl border border-border/80 bg-muted/20 p-4 transition-all focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/10">
 			<!-- Tab Selector Row -->
 			<div class="flex items-center gap-2 pb-3 border-b border-border/60">
-				<button
-					type="button"
+				<Button
+					variant={activeTab === 'message' ? 'default' : 'ghost'}
+					size="xs"
 					onclick={() => (activeTab = 'message')}
-					class="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all {activeTab === 'message'
-						? 'bg-primary text-primary-foreground shadow-xs'
-						: 'text-muted-foreground hover:text-foreground hover:bg-muted/60'}"
+					class="gap-1.5 h-7 text-xs font-semibold"
 				>
 					<Mail class="h-3.5 w-3.5" />
 					<span>Send Message</span>
-				</button>
+				</Button>
 
-				<button
-					type="button"
+				<Button
+					variant={activeTab === 'note' ? 'secondary' : 'ghost'}
+					size="xs"
 					onclick={() => (activeTab = 'note')}
-					class="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all {activeTab === 'note'
-						? 'bg-amber-600 text-white shadow-xs'
-						: 'text-muted-foreground hover:text-foreground hover:bg-muted/60'}"
+					class="gap-1.5 h-7 text-xs font-semibold {activeTab === 'note' ? 'bg-amber-600 text-white hover:bg-amber-700' : ''}"
 				>
 					<StickyNote class="h-3.5 w-3.5" />
 					<span>Log Note</span>
-				</button>
+				</Button>
 
-				<button
-					type="button"
+				<Button
+					variant={activeTab === 'activity' ? 'secondary' : 'ghost'}
+					size="xs"
 					onclick={() => (activeTab = 'activity')}
-					class="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all {activeTab === 'activity'
-						? 'bg-sky-600 text-white shadow-xs'
-						: 'text-muted-foreground hover:text-foreground hover:bg-muted/60'}"
+					class="gap-1.5 h-7 text-xs font-semibold {activeTab === 'activity' ? 'bg-sky-600 text-white hover:bg-sky-700' : ''}"
 				>
 					<Activity class="h-3.5 w-3.5" />
 					<span>Activities</span>
-				</button>
+				</Button>
 			</div>
 
 			<!-- Dynamic Tab Header Info -->
@@ -464,7 +456,7 @@
 						<select
 							id="activity-type-select"
 							bind:value={activityType}
-							class="w-full rounded-xl border border-border/80 bg-background px-3 py-1.5 text-xs text-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/20"
+							class="w-full rounded-md border border-input bg-transparent px-3 py-1 text-xs text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring h-8"
 						>
 							<option value="todo">To-Do Task</option>
 							<option value="call">Phone Call</option>
@@ -478,20 +470,20 @@
 						<label for="activity-due-date" class="block text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-1">
 							Due Date
 						</label>
-						<input
+						<Input
 							id="activity-due-date"
 							type="date"
 							bind:value={activityDueDate}
-							class="w-full rounded-xl border border-border/80 bg-background px-3 py-1.5 text-xs text-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/20"
+							class="h-8 text-xs"
 						/>
 					</div>
 
 					<div class="sm:col-span-2">
-						<input
+						<Input
 							type="text"
 							placeholder="Summary (e.g. Schedule 1:1 Performance Check-in)"
 							bind:value={activitySummary}
-							class="w-full rounded-xl border border-border/80 bg-background px-3 py-2 text-xs text-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/20"
+							class="h-8 text-xs"
 						/>
 					</div>
 				</div>
@@ -508,7 +500,7 @@
 						: activeTab === 'note'
 							? 'Log an internal note (visible to HR & Admins)...'
 							: 'Add additional details or notes for this scheduled activity...'}
-					class="w-full rounded-xl border border-border/70 bg-background p-3 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-hidden focus:ring-2 focus:ring-primary/20 resize-y min-h-[72px]"
+					class="w-full rounded-md border border-input bg-transparent p-3 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground/60 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-y min-h-[72px]"
 				></textarea>
 			</div>
 
@@ -516,7 +508,7 @@
 			{#if attachments.length > 0}
 				<div class="flex flex-wrap gap-2 pt-2">
 					{#each attachments as file, idx}
-						<span class="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-2.5 py-1 text-xs text-foreground">
+						<Badge variant="outline" class="gap-1.5 px-2.5 py-1 text-xs">
 							<Paperclip class="h-3 w-3 text-primary" />
 							<span class="font-medium truncate max-w-[150px]">{file.name}</span>
 							<span class="text-[10px] text-muted-foreground">({file.size})</span>
@@ -528,7 +520,7 @@
 							>
 								<X class="h-3 w-3" />
 							</button>
-						</span>
+						</Badge>
 					{/each}
 				</div>
 			{/if}
@@ -537,13 +529,14 @@
 			<div class="flex flex-wrap items-center justify-between gap-3 pt-3 mt-1 border-t border-border/40">
 				<!-- Author Identity Chip -->
 				<div class="flex items-center gap-2 text-xs text-muted-foreground">
-					<div class="h-6 w-6 rounded-full overflow-hidden bg-primary/10 flex items-center justify-center font-bold text-[10px] text-primary shrink-0 ring-1 ring-border">
+					<Avatar.Root class="h-6 w-6 ring-1 ring-border">
 						{#if auth.user.avatar}
-							<img src={auth.user.avatar} alt={auth.user.name} class="h-full w-full object-cover" />
-						{:else}
-							<span>{auth.user.initials}</span>
+							<Avatar.Image src={auth.user.avatar} alt={auth.user.name} />
 						{/if}
-					</div>
+						<Avatar.Fallback class="bg-primary/10 text-primary font-bold text-[10px]">
+							{auth.user.initials}
+						</Avatar.Fallback>
+					</Avatar.Root>
 					<span class="font-medium text-foreground">{auth.user.name}</span>
 					{#if auth.user}
 						{@const roleBadge = getAuthorRoleBadge(auth.user.role)}
@@ -564,22 +557,23 @@
 						class="hidden"
 					/>
 
-					<button
-						type="button"
+					<Button
+						variant="outline"
+						size="xs"
 						onclick={() => fileInputRef?.click()}
-						class="inline-flex items-center gap-1.5 rounded-xl border border-border/80 bg-background px-2.5 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted transition-all shadow-2xs"
+						class="gap-1.5 h-7 text-xs font-semibold"
 						title="Attach documents, receipts, or notes"
 					>
 						<Paperclip class="h-3.5 w-3.5" />
 						<span class="hidden sm:inline">Attach</span>
-					</button>
+					</Button>
 
 					<!-- Submit Button -->
-					<button
-						type="button"
+					<Button
+						size="xs"
 						onclick={handleSubmit}
 						disabled={isSubmitting || (!messageText.trim() && activeTab !== 'activity')}
-						class="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-1.5 text-xs font-bold text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:pointer-events-none transition-all shadow-xs"
+						class="gap-1.5 h-7 text-xs font-bold"
 					>
 						{#if isSubmitting}
 							<RefreshCw class="h-3.5 w-3.5 animate-spin" />
@@ -588,7 +582,7 @@
 							<Send class="h-3.5 w-3.5" />
 							<span>{activeTab === 'message' ? 'Send' : activeTab === 'note' ? 'Log Note' : 'Schedule'}</span>
 						{/if}
-					</button>
+					</Button>
 				</div>
 			</div>
 		</div>
@@ -609,7 +603,7 @@
 					</div>
 				{/each}
 			</div>
-		{:else if filteredEntries().length === 0}
+		{:else if filteredEntries.length === 0}
 			<!-- Empty State -->
 			<div class="rounded-2xl border border-dashed border-border/80 p-8 text-center bg-muted/10 space-y-2">
 				<div class="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-muted text-muted-foreground">
@@ -623,7 +617,7 @@
 		{:else}
 			<!-- Vertical Timeline Container -->
 			<div class="relative pl-6 space-y-6 before:absolute before:left-3 before:top-2 before:bottom-2 before:w-0.5 before:bg-border/80">
-				{#each filteredEntries() as entry (entry.id)}
+				{#each filteredEntries as entry (entry.id)}
 					{@const visual = getLogVisuals(entry)}
 					{@const IconComponent = visual.icon}
 					{@const roleBadge = getAuthorRoleBadge((entry.metadata as any)?.authorRole)}
@@ -641,13 +635,14 @@
 							<div class="flex flex-wrap items-center justify-between gap-2">
 								<div class="flex items-center gap-2">
 									<!-- Author Avatar / Initials -->
-									<div class="h-6 w-6 rounded-full overflow-hidden bg-primary/10 flex items-center justify-center font-bold text-[10px] text-primary shrink-0 ring-1 ring-border">
+									<Avatar.Root class="h-6 w-6 ring-1 ring-border">
 										{#if entry.authorAvatar}
-											<img src={entry.authorAvatar} alt={entry.authorName} class="h-full w-full object-cover" />
-										{:else}
-											<span>{authorInitials}</span>
+											<Avatar.Image src={entry.authorAvatar} alt={entry.authorName} />
 										{/if}
-									</div>
+										<Avatar.Fallback class="bg-primary/10 text-primary font-bold text-[10px]">
+											{authorInitials}
+										</Avatar.Fallback>
+									</Avatar.Root>
 
 									<!-- Author Name -->
 									<span class="font-bold text-foreground text-xs sm:text-sm">
@@ -683,10 +678,10 @@
 								{#if meta.attachments && Array.isArray(meta.attachments) && meta.attachments.length > 0}
 									<div class="pl-8 pt-1 flex flex-wrap gap-1.5">
 										{#each meta.attachments as attName}
-											<span class="inline-flex items-center gap-1 rounded-md border border-border/80 bg-background/80 px-2 py-0.5 text-[11px] text-foreground">
+											<Badge variant="outline" class="gap-1 px-2 py-0.5 text-[11px]">
 												<Paperclip class="h-3 w-3 text-primary" />
 												<span>{attName}</span>
-											</span>
+											</Badge>
 										{/each}
 									</div>
 								{/if}
@@ -697,4 +692,4 @@
 			</div>
 		{/if}
 	</div>
-</div>
+</Card.Root>

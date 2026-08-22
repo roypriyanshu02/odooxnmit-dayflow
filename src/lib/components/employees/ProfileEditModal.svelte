@@ -1,23 +1,21 @@
 <script lang="ts">
 	import {
-		X,
 		Upload,
 		User,
 		Lock,
 		ShieldCheck,
-		Building2,
-		Briefcase,
-		Phone,
-		Mail,
 		CheckCircle2,
 		AlertTriangle,
 		Loader2,
-		DollarSign,
-		Camera,
-		Sparkles
+		Camera
 	} from '@lucide/svelte';
 	import type { Employee } from '$lib/types/employee';
 	import { auth } from '$lib/state/auth.svelte';
+	import * as Dialog from '$lib/components/ui/dialog';
+	import { Button } from '$lib/components/ui/button';
+	import { Input } from '$lib/components/ui/input';
+	import { Label } from '$lib/components/ui/label';
+	import * as Tabs from '$lib/components/ui/tabs';
 
 	interface Props {
 		open?: boolean;
@@ -27,14 +25,13 @@
 	}
 
 	let {
-		open = false,
+		open = $bindable(false),
 		employee,
 		onClose,
 		onSuccess
 	}: Props = $props();
 
-	type TabKey = 'general' | 'private' | 'salary';
-	let activeTab = $state<TabKey>('general');
+	let activeTab = $state('general');
 
 	// Editable form states
 	let firstName = $state('');
@@ -102,6 +99,13 @@
 		}
 	}
 
+	function handleOpenChange(newOpen: boolean) {
+		open = newOpen;
+		if (!newOpen) {
+			onClose?.();
+		}
+	}
+
 	async function handleSave() {
 		isSubmitting = true;
 		errorMessage = null;
@@ -149,6 +153,7 @@
 			}
 
 			setTimeout(() => {
+				open = false;
 				onClose?.();
 			}, 1200);
 		} catch (err: any) {
@@ -159,93 +164,46 @@
 	}
 </script>
 
-{#if open}
-	<div class="fixed inset-0 z-50 flex items-center justify-center p-4">
-		<!-- Backdrop -->
-		<div
-			class="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity"
-			onclick={onClose}
-			role="button"
-			tabindex="0"
-			onkeydown={(e) => e.key === 'Escape' && onClose?.()}
-		></div>
-
-		<!-- Dialog Modal -->
-		<div
-			class="relative w-full max-w-2xl rounded-2xl border border-border bg-card shadow-2xl transition-all animate-in fade-in-0 zoom-in-95 overflow-hidden"
-			role="dialog"
-			aria-modal="true"
-		>
-			<!-- Header -->
-			<div class="flex items-center justify-between border-b border-border p-5 bg-muted/20">
-				<div class="flex items-center gap-3">
-					<div class="relative h-12 w-12 rounded-full overflow-hidden bg-primary/10 flex items-center justify-center text-primary font-bold border border-primary/20 shrink-0">
-						{#if avatarUrl}
-							<img src={avatarUrl} alt="Avatar" class="h-full w-full object-cover" />
-						{:else}
-							<span>{firstName?.[0] || ''}{lastName?.[0] || ''}</span>
-						{/if}
-						<label class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity cursor-pointer">
-							<Camera class="h-4 w-4 text-white" />
-							<input type="file" accept="image/*" class="hidden" onchange={handleAvatarFileChange} />
-						</label>
-					</div>
-					<div>
-						<h2 class="text-base font-bold text-foreground">Edit Employee Profile</h2>
-						<p class="text-xs text-muted-foreground font-mono">{employee.id} • {employee.department}</p>
-					</div>
-				</div>
-
-				<button
-					type="button"
-					class="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-					onclick={onClose}
-				>
-					<X class="h-5 w-5" />
-				</button>
+<Dialog.Root bind:open onOpenChange={handleOpenChange}>
+	<Dialog.Content class="sm:max-w-2xl p-0 overflow-hidden gap-0">
+		<!-- Header -->
+		<Dialog.Header class="flex flex-row items-center gap-3 p-5 bg-muted/20 border-b border-border space-y-0">
+			<div class="relative h-12 w-12 rounded-full overflow-hidden bg-primary/10 flex items-center justify-center text-primary font-bold border border-primary/20 shrink-0">
+				{#if avatarUrl}
+					<img src={avatarUrl} alt="Avatar" class="h-full w-full object-cover" />
+				{:else}
+					<span>{firstName?.[0] || ''}{lastName?.[0] || ''}</span>
+				{/if}
+				<label class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity cursor-pointer">
+					<Camera class="h-4 w-4 text-white" />
+					<input type="file" accept="image/*" class="hidden" onchange={handleAvatarFileChange} />
+				</label>
 			</div>
+			<div class="space-y-0.5">
+				<Dialog.Title class="text-base font-bold text-foreground">Edit Employee Profile</Dialog.Title>
+				<Dialog.Description class="text-xs text-muted-foreground font-mono">{employee.id} • {employee.department}</Dialog.Description>
+			</div>
+		</Dialog.Header>
 
-			<!-- Tab Navigation Bar -->
-			<div class="flex border-b border-border bg-muted/10 px-5 text-xs font-semibold">
-				<button
-					type="button"
-					class="flex items-center gap-1.5 border-b-2 py-3 px-3 transition-colors {activeTab === 'general'
-						? 'border-primary text-primary font-bold'
-						: 'border-transparent text-muted-foreground hover:text-foreground'}"
-					onclick={() => (activeTab = 'general')}
-				>
+		<!-- Tabs -->
+		<Tabs.Root bind:value={activeTab} class="w-full">
+			<Tabs.List class="w-full justify-start rounded-none border-b border-border bg-muted/10 px-5 h-11">
+				<Tabs.Trigger value="general" class="gap-1.5 text-xs">
 					<User class="h-3.5 w-3.5" />
 					<span>General Details</span>
-				</button>
-
-				<button
-					type="button"
-					class="flex items-center gap-1.5 border-b-2 py-3 px-3 transition-colors {activeTab === 'private'
-						? 'border-primary text-primary font-bold'
-						: 'border-transparent text-muted-foreground hover:text-foreground'}"
-					onclick={() => (activeTab = 'private')}
-				>
+				</Tabs.Trigger>
+				<Tabs.Trigger value="private" class="gap-1.5 text-xs">
 					<Lock class="h-3.5 w-3.5" />
-					<span>Private &amp; Banking</span>
-				</button>
-
-				<button
-					type="button"
-					class="flex items-center gap-1.5 border-b-2 py-3 px-3 transition-colors {activeTab === 'salary'
-						? 'border-primary text-primary font-bold'
-						: 'border-transparent text-muted-foreground hover:text-foreground'}"
-					onclick={() => (activeTab = 'salary')}
-				>
+					<span>Private & Banking</span>
+				</Tabs.Trigger>
+				<Tabs.Trigger value="salary" class="gap-1.5 text-xs">
 					<ShieldCheck class="h-3.5 w-3.5" />
 					<span>Salary Configuration</span>
-					{#if !canEditSalary}
-						<span class="rounded bg-muted px-1.5 py-0.2 text-[9px] text-muted-foreground uppercase">Locked</span>
-					{/if}
-				</button>
-			</div>
+				</Tabs.Trigger>
+			</Tabs.List>
 
 			<!-- Body Form Fields -->
-			<div class="p-5 max-h-[60vh] overflow-y-auto space-y-4">
+			<div class="p-5 max-h-[55vh] overflow-y-auto space-y-4">
 				{#if errorMessage}
 					<div class="flex items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
 						<AlertTriangle class="h-4 w-4 shrink-0" />
@@ -261,231 +219,160 @@
 				{/if}
 
 				<!-- TAB 1: General Details -->
-				{#if activeTab === 'general'}
-					<div class="space-y-3.5 text-xs">
-						<div class="grid grid-cols-2 gap-3">
-							<div>
-								<label for="first-name" class="block font-semibold text-foreground mb-1">First Name</label>
-								<input
-									id="first-name"
-									type="text"
-									bind:value={firstName}
-									class="w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/20"
-								/>
-							</div>
-							<div>
-								<label for="last-name" class="block font-semibold text-foreground mb-1">Last Name</label>
-								<input
-									id="last-name"
-									type="text"
-									bind:value={lastName}
-									class="w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/20"
-								/>
-							</div>
+				<Tabs.Content value="general" class="space-y-3.5 text-xs mt-0">
+					<div class="grid grid-cols-2 gap-3">
+						<div class="space-y-1.5">
+							<Label for="first-name">First Name</Label>
+							<Input id="first-name" type="text" bind:value={firstName} class="h-8 text-xs" />
 						</div>
-
-						<div class="grid grid-cols-2 gap-3">
-							<div>
-								<label for="job-title" class="block font-semibold text-foreground mb-1">Job Title / Designation</label>
-								<input
-									id="job-title"
-									type="text"
-									bind:value={jobTitle}
-									class="w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/20"
-								/>
-							</div>
-							<div>
-								<label for="department" class="block font-semibold text-foreground mb-1">Department</label>
-								<select
-									id="department"
-									bind:value={department}
-									class="w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/20"
-								>
-									<option value="Engineering">Engineering</option>
-									<option value="Product">Product</option>
-									<option value="Design">Design</option>
-									<option value="Sales">Sales</option>
-									<option value="Marketing">Marketing</option>
-									<option value="HR">HR</option>
-								</select>
-							</div>
-						</div>
-
-						<div class="grid grid-cols-2 gap-3">
-							<div>
-								<label for="phone" class="block font-semibold text-foreground mb-1">Contact Phone</label>
-								<input
-									id="phone"
-									type="text"
-									bind:value={phone}
-									placeholder="+91 98765 43210"
-									class="w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/20"
-								/>
-							</div>
-							<div>
-								<label for="avatar-url" class="block font-semibold text-foreground mb-1">Avatar Image URL (or upload above)</label>
-								<input
-									id="avatar-url"
-									type="text"
-									bind:value={avatarUrl}
-									placeholder="https://..."
-									class="w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/20"
-								/>
-							</div>
-						</div>
-
-						<div>
-							<label for="about-bio" class="block font-semibold text-foreground mb-1">About / Bio Summary</label>
-							<textarea
-								id="about-bio"
-								bind:value={aboutBio}
-								rows="3"
-								placeholder="Brief summary of background and passions..."
-								class="w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/20 resize-none"
-							></textarea>
+						<div class="space-y-1.5">
+							<Label for="last-name">Last Name</Label>
+							<Input id="last-name" type="text" bind:value={lastName} class="h-8 text-xs" />
 						</div>
 					</div>
-				{/if}
+
+					<div class="grid grid-cols-2 gap-3">
+						<div class="space-y-1.5">
+							<Label for="job-title">Job Title / Designation</Label>
+							<Input id="job-title" type="text" bind:value={jobTitle} class="h-8 text-xs" />
+						</div>
+						<div class="space-y-1.5">
+							<Label for="department">Department</Label>
+							<select
+								id="department"
+								bind:value={department}
+								class="w-full rounded-md border border-input bg-transparent px-3 py-1 text-xs shadow-2xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring h-8"
+							>
+								<option value="Engineering">Engineering</option>
+								<option value="Product">Product</option>
+								<option value="Design">Design</option>
+								<option value="Sales">Sales</option>
+								<option value="Marketing">Marketing</option>
+								<option value="HR">HR</option>
+							</select>
+						</div>
+					</div>
+
+					<div class="grid grid-cols-2 gap-3">
+						<div class="space-y-1.5">
+							<Label for="phone">Contact Phone</Label>
+							<Input id="phone" type="text" bind:value={phone} placeholder="+91 98765 43210" class="h-8 text-xs" />
+						</div>
+						<div class="space-y-1.5">
+							<Label for="avatar-url">Avatar Image URL</Label>
+							<Input id="avatar-url" type="text" bind:value={avatarUrl} placeholder="https://..." class="h-8 text-xs" />
+						</div>
+					</div>
+
+					<div class="space-y-1.5">
+						<Label for="about-bio">About / Bio Summary</Label>
+						<textarea
+							id="about-bio"
+							bind:value={aboutBio}
+							rows="3"
+							placeholder="Brief summary of background and passions..."
+							class="w-full rounded-md border border-input bg-transparent px-3 py-2 text-xs shadow-2xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-none"
+						></textarea>
+					</div>
+				</Tabs.Content>
 
 				<!-- TAB 2: Private & Banking -->
-				{#if activeTab === 'private'}
-					<div class="space-y-3.5 text-xs">
-						<div class="grid grid-cols-3 gap-3">
-							<div>
-								<label for="dob" class="block font-semibold text-foreground mb-1">Date of Birth</label>
-								<input
-									id="dob"
-									type="date"
-									bind:value={dob}
-									class="w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/20"
-								/>
-							</div>
-							<div>
-								<label for="pan" class="block font-semibold text-foreground mb-1">PAN Number</label>
-								<input
-									id="pan"
-									type="text"
-									bind:value={panNumber}
-									placeholder="ABCDE1234F"
-									class="w-full rounded-lg border border-border bg-background px-3 py-2 uppercase font-mono text-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/20"
-								/>
-							</div>
-							<div>
-								<label for="uan" class="block font-semibold text-foreground mb-1">UAN Number</label>
-								<input
-									id="uan"
-									type="text"
-									bind:value={uanNumber}
-									placeholder="100900200300"
-									class="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/20"
-								/>
-							</div>
+				<Tabs.Content value="private" class="space-y-3.5 text-xs mt-0">
+					<div class="grid grid-cols-3 gap-3">
+						<div class="space-y-1.5">
+							<Label for="dob">Date of Birth</Label>
+							<Input id="dob" type="date" bind:value={dob} class="h-8 text-xs" />
 						</div>
-
-						<div class="grid grid-cols-3 gap-3">
-							<div>
-								<label for="bank-name" class="block font-semibold text-foreground mb-1">Bank Name</label>
-								<input
-									id="bank-name"
-									type="text"
-									bind:value={bankName}
-									placeholder="HDFC Bank"
-									class="w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/20"
-								/>
-							</div>
-							<div>
-								<label for="account-number" class="block font-semibold text-foreground mb-1">Account Number</label>
-								<input
-									id="account-number"
-									type="text"
-									bind:value={bankAccountNumber}
-									placeholder="501004829102"
-									class="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/20"
-								/>
-							</div>
-							<div>
-								<label for="ifsc" class="block font-semibold text-foreground mb-1">IFSC Code</label>
-								<input
-									id="ifsc"
-									type="text"
-									bind:value={bankIfsc}
-									placeholder="HDFC0001234"
-									class="w-full rounded-lg border border-border bg-background px-3 py-2 uppercase font-mono text-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/20"
-								/>
-							</div>
+						<div class="space-y-1.5">
+							<Label for="pan">PAN Number</Label>
+							<Input id="pan" type="text" bind:value={panNumber} placeholder="ABCDE1234F" class="h-8 text-xs font-mono uppercase" />
 						</div>
-
-						<div>
-							<label for="address" class="block font-semibold text-foreground mb-1">Residential Address</label>
-							<input
-								id="address"
-								type="text"
-								bind:value={address}
-								placeholder="City, State, Country"
-								class="w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/20"
-							/>
+						<div class="space-y-1.5">
+							<Label for="uan">UAN Number</Label>
+							<Input id="uan" type="text" bind:value={uanNumber} placeholder="100900200300" class="h-8 text-xs font-mono" />
 						</div>
 					</div>
-				{/if}
+
+					<div class="grid grid-cols-3 gap-3">
+						<div class="space-y-1.5">
+							<Label for="bank-name">Bank Name</Label>
+							<Input id="bank-name" type="text" bind:value={bankName} placeholder="HDFC Bank" class="h-8 text-xs" />
+						</div>
+						<div class="space-y-1.5">
+							<Label for="account-number">Account Number</Label>
+							<Input id="account-number" type="text" bind:value={bankAccountNumber} placeholder="501004829102" class="h-8 text-xs font-mono" />
+						</div>
+						<div class="space-y-1.5">
+							<Label for="ifsc">IFSC Code</Label>
+							<Input id="ifsc" type="text" bind:value={bankIfsc} placeholder="HDFC0001234" class="h-8 text-xs font-mono uppercase" />
+						</div>
+					</div>
+
+					<div class="space-y-1.5">
+						<Label for="address">Residential Address</Label>
+						<Input id="address" type="text" bind:value={address} placeholder="City, State, Country" class="h-8 text-xs" />
+					</div>
+				</Tabs.Content>
 
 				<!-- TAB 3: Salary Configuration -->
-				{#if activeTab === 'salary'}
-					<div class="space-y-4 text-xs">
-						{#if !canEditSalary}
-							<div class="rounded-xl border border-amber-200 bg-amber-50/60 p-4 text-xs text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/20 dark:text-amber-300">
-								<strong>Restricted Access:</strong> Only HR Officers and System Administrators have permission to modify monthly wage contracts.
-							</div>
-						{/if}
+				<Tabs.Content value="salary" class="space-y-4 text-xs mt-0">
+					{#if !canEditSalary}
+						<div class="rounded-xl border border-amber-200 bg-amber-50/60 p-4 text-xs text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/20 dark:text-amber-300">
+							<strong>Restricted Access:</strong> Only HR Officers and System Administrators have permission to modify monthly wage contracts.
+						</div>
+					{/if}
 
-						<div class="rounded-xl border border-border bg-muted/20 p-4 space-y-3">
-							<div>
-								<label for="monthly-wage" class="block font-semibold text-foreground mb-1">Total Monthly Wage (CTC Basis ₹)</label>
-								<div class="relative w-full max-w-xs">
-									<span class="absolute left-3 top-2.5 font-bold text-muted-foreground">₹</span>
-									<input
-										id="monthly-wage"
-										type="number"
-										bind:value={monthlyWage}
-										disabled={!canEditSalary}
-										min="0"
-										step="1000"
-										class="w-full rounded-lg border border-border bg-background py-2 pl-8 pr-3 font-mono font-bold text-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/20 disabled:opacity-50"
-									/>
-								</div>
-								<p class="mt-1 text-[11px] text-muted-foreground">
-									Base figure used by the statutory formula engine to compute Basic (50%), HRA (25%), PF (12%), and Allowances.
-								</p>
+					<div class="rounded-xl border border-border bg-muted/20 p-4 space-y-3">
+						<div class="space-y-1.5">
+							<Label for="monthly-wage">Total Monthly Wage (CTC Basis ₹)</Label>
+							<div class="relative w-full max-w-xs">
+								<span class="absolute left-3 top-2 font-bold text-muted-foreground">₹</span>
+								<Input
+									id="monthly-wage"
+									type="number"
+									bind:value={monthlyWage}
+									disabled={!canEditSalary}
+									min="0"
+									step="1000"
+									class="pl-7 h-8 font-mono font-bold"
+								/>
 							</div>
+							<p class="text-[11px] text-muted-foreground">
+								Base figure used by the statutory formula engine to compute Basic (50%), HRA (25%), PF (12%), and Allowances.
+							</p>
 						</div>
 					</div>
-				{/if}
+				</Tabs.Content>
 			</div>
+		</Tabs.Root>
 
-			<!-- Footer Actions -->
-			<div class="flex items-center justify-end gap-2 border-t border-border p-4 bg-muted/20">
-				<button
-					type="button"
-					class="rounded-lg border border-border px-4 py-2 text-xs font-semibold text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-					onclick={onClose}
-					disabled={isSubmitting}
-				>
-					Cancel
-				</button>
-				<button
-					type="button"
-					class="flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-xs hover:bg-primary/90 transition-all disabled:opacity-50 cursor-pointer"
-					onclick={handleSave}
-					disabled={isSubmitting}
-				>
-					{#if isSubmitting}
-						<Loader2 class="h-3.5 w-3.5 animate-spin" />
-						<span>Saving Changes...</span>
-					{:else}
-						<CheckCircle2 class="h-3.5 w-3.5" />
-						<span>Save Profile</span>
-					{/if}
-				</button>
-			</div>
-		</div>
-	</div>
-{/if}
+		<!-- Footer Actions -->
+		<Dialog.Footer class="flex items-center justify-end gap-2 border-t border-border p-4 bg-muted/20">
+			<Button
+				variant="outline"
+				size="sm"
+				onclick={() => {
+					open = false;
+					onClose?.();
+				}}
+				disabled={isSubmitting}
+			>
+				Cancel
+			</Button>
+			<Button
+				size="sm"
+				onclick={handleSave}
+				disabled={isSubmitting}
+				class="gap-1.5"
+			>
+				{#if isSubmitting}
+					<Loader2 class="h-3.5 w-3.5 animate-spin" />
+					<span>Saving Changes...</span>
+				{:else}
+					<CheckCircle2 class="h-3.5 w-3.5" />
+					<span>Save Profile</span>
+				{/if}
+			</Button>
+		</Dialog.Footer>
+	</Dialog.Content>
+</Dialog.Root>

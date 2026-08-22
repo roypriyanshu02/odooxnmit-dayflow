@@ -1,34 +1,25 @@
 <script lang="ts">
 	import type { EmployeeCardProps } from './types';
-	import type { Employee, EmployeeWithRelations, AttendanceDisplayStatus } from '$lib/types/employee';
+	import type { EmployeeWithRelations, AttendanceDisplayStatus } from '$lib/types/employee';
 	import {
 		Mail,
 		Phone,
-		Building2,
 		ExternalLink,
-		MoreVertical,
-		Plane,
-		Circle,
-		CheckCircle2,
-		Briefcase,
-		User,
-		Sparkles
+		Briefcase
 	} from '@lucide/svelte';
+	import * as Card from '$lib/components/ui/card';
+	import { Badge } from '$lib/components/ui/badge';
+	import { Button } from '$lib/components/ui/button';
+	import * as Avatar from '$lib/components/ui/avatar';
 
 	let {
 		employee,
 		viewMode = 'kanban',
 		isSelected = false,
-		showActions = true,
 		canEdit = false,
 		onSelect,
-		onEdit,
-		onDelete,
-		onStatusChange
+		onEdit
 	}: EmployeeCardProps = $props();
-
-	// Image fallback state
-	let imgError = $state(false);
 
 	// Compute full name
 	const fullName = $derived(`${employee.firstName} ${employee.lastName}`.trim());
@@ -134,11 +125,11 @@
 
 {#if viewMode === 'list'}
 	<!-- List Row Mode -->
-	<div
-		class="group flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-xl border border-border/80 bg-card hover:bg-muted/30 transition-all duration-150 hover:border-border {isSelected ? 'ring-2 ring-primary bg-primary/5' : ''}"
+	<Card.Root
+		class="group flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 hover:bg-muted/30 transition-all duration-150 cursor-pointer {isSelected ? 'ring-2 ring-primary bg-primary/5' : ''}"
 		onclick={handleCardClick}
 		role="button"
-		tabindex="0"
+		tabindex={0}
 		onkeydown={(e) => {
 			if (e.key === 'Enter' || e.key === ' ') {
 				e.preventDefault();
@@ -150,18 +141,14 @@
 		<div class="flex items-center gap-3.5 min-w-[260px]">
 			<!-- Avatar with Presence Badge -->
 			<div class="relative shrink-0">
-				{#if employee.avatarUrl && !imgError}
-					<img
-						src={employee.avatarUrl}
-						alt={fullName}
-						class="h-11 w-11 rounded-full object-cover border border-border/60 shadow-2xs group-hover:scale-105 transition-transform"
-						onerror={() => (imgError = true)}
-					/>
-				{:else}
-					<div class="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500/20 to-purple-500/20 text-indigo-700 dark:text-indigo-300 font-bold text-sm border border-indigo-200/40">
+				<Avatar.Root class="h-11 w-11 border border-border/60 shadow-2xs group-hover:scale-105 transition-transform">
+					{#if employee.avatarUrl}
+						<Avatar.Image src={employee.avatarUrl} alt={fullName} />
+					{/if}
+					<Avatar.Fallback class="bg-primary/10 text-primary font-bold text-sm">
 						{initials}
-					</div>
-				{/if}
+					</Avatar.Fallback>
+				</Avatar.Root>
 
 				<!-- Presence Dot Indicator -->
 				<span class="absolute -bottom-0.5 -right-0.5 rounded-full ring-2 ring-card">
@@ -192,9 +179,9 @@
 					>
 						{fullName}
 					</a>
-					<span class="font-mono text-[10px] text-muted-foreground px-1.5 py-0.5 rounded bg-muted/60 border border-border/50 shrink-0">
+					<Badge variant="outline" class="font-mono text-[10px] text-muted-foreground px-1.5 py-0">
 						{employee.id}
-					</span>
+					</Badge>
 				</div>
 				<p class="text-xs text-muted-foreground truncate">{employee.jobTitle}</p>
 			</div>
@@ -203,10 +190,10 @@
 		<!-- Middle: Department badge & Contact links -->
 		<div class="flex flex-wrap items-center gap-3 sm:gap-6 text-xs text-muted-foreground">
 			<!-- Department Badge -->
-			<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border {deptTheme.bg} {deptTheme.text} {deptTheme.border}">
+			<Badge variant="outline" class="gap-1.5 px-2.5 py-0.5 text-xs font-semibold {deptTheme.bg} {deptTheme.text} {deptTheme.border}">
 				<span class="h-1.5 w-1.5 rounded-full {deptTheme.dot}"></span>
 				{employee.department}
-			</span>
+			</Badge>
 
 			<!-- Email -->
 			{#if employee.email}
@@ -238,39 +225,40 @@
 		<div class="flex items-center gap-2 self-end sm:self-auto shrink-0">
 			<!-- Presence Indicator Status Pill -->
 			{#if presenceStatus === 'present'}
-				<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+				<Badge variant="outline" class="gap-1 px-2.5 py-0.5 text-[11px] font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800">
 					<span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
 					Present
-				</span>
+				</Badge>
 			{:else if presenceStatus === 'on_leave'}
-				<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-sky-50 text-sky-700 dark:bg-sky-950/40 dark:text-sky-300 border border-sky-200 dark:border-sky-800">
+				<Badge variant="outline" class="gap-1 px-2.5 py-0.5 text-[11px] font-semibold bg-sky-50 text-sky-700 dark:bg-sky-950/40 dark:text-sky-300 border-sky-200 dark:border-sky-800">
 					<span>✈️</span>
 					On Leave
-				</span>
+				</Badge>
 			{:else}
-				<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+				<Badge variant="outline" class="gap-1 px-2.5 py-0.5 text-[11px] font-semibold bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 border-amber-200 dark:border-amber-800">
 					<span class="h-1.5 w-1.5 rounded-full bg-amber-400"></span>
 					Absent
-				</span>
+				</Badge>
 			{/if}
 
-			<a
+			<Button
+				variant="outline"
+				size="icon-sm"
 				href="/employees/{employee.id}"
-				class="inline-flex items-center gap-1 p-2 text-xs font-semibold text-muted-foreground hover:text-foreground rounded-lg border border-border/80 hover:bg-muted transition-colors"
 				onclick={(e) => e.stopPropagation()}
 				title="View Full Profile"
 			>
 				<ExternalLink class="h-3.5 w-3.5" />
-			</a>
+			</Button>
 		</div>
-	</div>
+	</Card.Root>
 {:else}
 	<!-- Kanban / Grid Card Mode (Odoo Style) -->
-	<div
-		class="group relative flex flex-col justify-between rounded-2xl border border-border/80 bg-card p-5 shadow-2xs transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md {isSelected ? 'ring-2 ring-primary bg-primary/5' : ''}"
+	<Card.Root
+		class="group relative flex flex-col justify-between p-5 shadow-2xs transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md cursor-pointer {isSelected ? 'ring-2 ring-primary bg-primary/5' : ''}"
 		onclick={handleCardClick}
 		role="button"
-		tabindex="0"
+		tabindex={0}
 		onkeydown={(e) => {
 			if (e.key === 'Enter' || e.key === ' ') {
 				e.preventDefault();
@@ -281,61 +269,48 @@
 		<div>
 			<!-- Top Header: Department Pill & Presence Indicator Status -->
 			<div class="flex items-center justify-between gap-2 mb-4">
-				<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold border tracking-wide {deptTheme.bg} {deptTheme.text} {deptTheme.border}">
+				<Badge variant="outline" class="gap-1.5 px-2.5 py-0.5 text-[11px] font-semibold {deptTheme.bg} {deptTheme.text} {deptTheme.border}">
 					<span class="h-1.5 w-1.5 rounded-full {deptTheme.dot}"></span>
 					{employee.department}
-				</span>
+				</Badge>
 
 				<!-- Presence indicator pill -->
 				{#if presenceStatus === 'present'}
-					<span
-						class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-200/70 dark:border-emerald-800/40"
-						title="Present Today"
-					>
+					<Badge variant="outline" class="gap-1 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-200/70 dark:border-emerald-800/40">
 						<span class="relative flex h-2 w-2">
 							<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
 							<span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
 						</span>
 						Present
-					</span>
+					</Badge>
 				{:else if presenceStatus === 'on_leave'}
-					<span
-						class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-sky-500/10 text-sky-700 dark:text-sky-300 border border-sky-200/70 dark:border-sky-800/40"
-						title="On Leave"
-					>
+					<Badge variant="outline" class="gap-1 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-sky-500/10 text-sky-700 dark:text-sky-300 border-sky-200/70 dark:border-sky-800/40">
 						<span>✈️</span>
 						On Leave
-					</span>
+					</Badge>
 				{:else}
-					<span
-						class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-200/70 dark:border-amber-800/40"
-						title="Absent / Offline"
-					>
+					<Badge variant="outline" class="gap-1 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-200/70 dark:border-amber-800/40">
 						<span class="h-2 w-2 rounded-full bg-amber-400"></span>
 						Absent
-					</span>
+					</Badge>
 				{/if}
 			</div>
 
 			<!-- Center Profile Information: Avatar & Identity -->
 			<div class="flex items-start gap-4">
-				<!-- Avatar with presence badge badgelet -->
+				<!-- Avatar with presence badgelet -->
 				<div class="relative shrink-0">
-					{#if employee.avatarUrl && !imgError}
-						<img
-							src={employee.avatarUrl}
-							alt={fullName}
-							class="h-14 w-14 rounded-2xl object-cover border border-border/80 shadow-2xs group-hover:scale-105 transition-transform duration-200"
-							onerror={() => (imgError = true)}
-						/>
-					{:else}
-						<div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500/20 via-purple-500/20 to-pink-500/20 text-indigo-700 dark:text-indigo-300 font-extrabold text-base border border-indigo-200/50 shadow-2xs">
+					<Avatar.Root class="h-14 w-14 rounded-2xl border border-border/80 shadow-2xs group-hover:scale-105 transition-transform duration-200">
+						{#if employee.avatarUrl}
+							<Avatar.Image src={employee.avatarUrl} alt={fullName} class="rounded-2xl" />
+						{/if}
+						<Avatar.Fallback class="rounded-2xl bg-gradient-to-br from-indigo-500/20 via-purple-500/20 to-pink-500/20 text-indigo-700 dark:text-indigo-300 font-extrabold text-base border border-indigo-200/50">
 							{initials}
-						</div>
-					{/if}
+						</Avatar.Fallback>
+					</Avatar.Root>
 
 					<!-- Mini presence dot overlay on avatar -->
-					<div class="absolute -bottom-1 -right-1 rounded-full bg-card p-0.5 shadow-xs">
+					<div class="absolute -bottom-1 -right-1 rounded-full bg-card p-0.5 shadow-2xs">
 						{#if presenceStatus === 'present'}
 							<span class="block h-3.5 w-3.5 rounded-full bg-emerald-500 ring-2 ring-card" title="🟢 Present"></span>
 						{:else if presenceStatus === 'on_leave'}
@@ -364,9 +339,9 @@
 					</p>
 
 					<div class="mt-1 flex items-center gap-1.5">
-						<span class="font-mono text-[10px] font-semibold text-muted-foreground bg-muted/60 border border-border/50 px-1.5 py-0.2 rounded">
+						<Badge variant="outline" class="font-mono text-[10px] font-semibold text-muted-foreground px-1.5 py-0">
 							{employee.id}
-						</span>
+						</Badge>
 						{#if employee.about?.passions}
 							<span class="text-[10px] text-muted-foreground/80 truncate max-w-[120px]" title={employee.about.passions}>
 								• {employee.about.passions}
@@ -410,9 +385,9 @@
 			{#if employee.resume?.skills && employee.resume.skills.length > 0}
 				<div class="mt-3 flex flex-wrap items-center gap-1 pt-2">
 					{#each employee.resume.skills.slice(0, 3) as skill (skill)}
-						<span class="rounded bg-muted/70 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground border border-border/40 truncate max-w-[100px]">
+						<Badge variant="secondary" class="text-[10px] font-medium px-1.5 py-0 max-w-[100px] truncate">
 							{skill}
-						</span>
+						</Badge>
 					{/each}
 					{#if employee.resume.skills.length > 3}
 						<span class="text-[10px] text-muted-foreground font-semibold">
@@ -425,19 +400,21 @@
 
 		<!-- Card Footer: Profile Button -->
 		<div class="mt-4 pt-3 border-t border-border/60 flex items-center justify-between gap-2">
-			<a
+			<Button
+				variant="outline"
+				size="sm"
+				class="flex-1 text-xs font-semibold gap-1.5"
 				href="/employees/{employee.id}"
-				class="inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-border/80 bg-background/80 py-2 text-xs font-semibold text-foreground shadow-2xs hover:bg-accent hover:text-accent-foreground hover:border-border transition-all"
 				onclick={(e) => e.stopPropagation()}
 			>
 				<span>View Profile</span>
 				<ExternalLink class="h-3.5 w-3.5 text-muted-foreground group-hover:text-foreground" />
-			</a>
+			</Button>
 
 			{#if canEdit && onEdit}
-				<button
-					type="button"
-					class="inline-flex h-8 w-8 items-center justify-center rounded-xl border border-border bg-background text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+				<Button
+					variant="outline"
+					size="icon-sm"
 					onclick={(e) => {
 						e.stopPropagation();
 						onEdit?.(employee);
@@ -445,8 +422,8 @@
 					title="Edit Employee"
 				>
 					<Briefcase class="h-3.5 w-3.5" />
-				</button>
+				</Button>
 			{/if}
 		</div>
-	</div>
+	</Card.Root>
 {/if}
