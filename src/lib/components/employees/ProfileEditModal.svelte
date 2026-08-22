@@ -36,26 +36,49 @@
 	type TabKey = 'general' | 'private' | 'salary';
 	let activeTab = $state<TabKey>('general');
 
-	// Editable form states initialized from employee prop
-	let firstName = $state(employee.firstName || '');
-	let lastName = $state(employee.lastName || '');
-	let jobTitle = $state(employee.jobTitle || '');
-	let department = $state(employee.department || 'Engineering');
-	let phone = $state(employee.phone || '');
-	let aboutBio = $state(employee.aboutBio || '');
-	let avatarUrl = $state(employee.avatarUrl || '');
+	// Editable form states
+	let firstName = $state('');
+	let lastName = $state('');
+	let jobTitle = $state('');
+	let department = $state('Engineering');
+	let phone = $state('');
+	let aboutBio = $state('');
+	let avatarUrl = $state('');
 
 	// Private Info
-	let dob = $state(employee.dob || '');
-	let panNumber = $state(employee.panNumber || '');
-	let uanNumber = $state(employee.uanNumber || '');
-	let bankName = $state(employee.bankName || '');
-	let bankAccountNumber = $state(employee.bankAccountNumber || '');
-	let bankIfsc = $state(employee.bankIfsc || '');
-	let address = $state(employee.address || '');
+	let dob = $state('');
+	let panNumber = $state('');
+	let uanNumber = $state('');
+	let bankName = $state('');
+	let bankAccountNumber = $state('');
+	let bankIfsc = $state('');
+	let address = $state('');
 
-	// Salary Config (Only editable by admin or hr)
-	let monthlyWage = $state(employee.monthlyWage || 0);
+	// Salary Config
+	let monthlyWage = $state(0);
+
+	// Synchronize when employee prop changes
+	$effect(() => {
+		if (employee) {
+			firstName = employee.firstName || '';
+			lastName = employee.lastName || '';
+			jobTitle = employee.jobTitle || '';
+			department = employee.department || 'Engineering';
+			phone = employee.phone || '';
+			aboutBio = employee.about?.bio || (employee as any).aboutBio || '';
+			avatarUrl = employee.avatarUrl || '';
+
+			dob = employee.privateInfo?.dob || (employee as any).dob || '';
+			panNumber = employee.privateInfo?.panNumber || (employee as any).panNumber || '';
+			uanNumber = employee.privateInfo?.uanNumber || (employee as any).uanNumber || '';
+			bankName = employee.privateInfo?.bankName || (employee as any).bankName || '';
+			bankAccountNumber = employee.privateInfo?.bankAccountNumber || (employee as any).bankAccountNumber || '';
+			bankIfsc = employee.privateInfo?.bankIfsc || (employee as any).bankIfsc || '';
+			address = employee.privateInfo?.address || (employee as any).address || '';
+
+			monthlyWage = employee.monthlyWage || 0;
+		}
+	});
 
 	let isSubmitting = $state(false);
 	let errorMessage = $state<string | null>(null);
@@ -450,7 +473,7 @@
 				</button>
 				<button
 					type="button"
-					class="flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-xs hover:bg-primary/90 transition-all disabled:opacity-50"
+					class="flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-xs hover:bg-primary/90 transition-all disabled:opacity-50 cursor-pointer"
 					onclick={handleSave}
 					disabled={isSubmitting}
 				>
