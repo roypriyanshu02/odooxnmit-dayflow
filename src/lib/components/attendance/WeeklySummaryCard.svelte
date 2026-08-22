@@ -1,18 +1,15 @@
 <script lang="ts">
 	import {
 		Calendar,
-		Clock,
 		Flame,
 		CheckCircle2,
-		Sparkles,
 		Plane,
-		Coffee,
-		AlertCircle,
-		ChevronRight,
-		TrendingUp
+		AlertCircle
 	} from '@lucide/svelte';
 	import type { AttendanceRecord } from '$lib/types/attendance';
-	import { formatDurationHuman } from '$lib/utils/break';
+	import * as Card from '$lib/components/ui/card';
+	import { Badge } from '$lib/components/ui/badge';
+	import { Progress } from '$lib/components/ui/progress';
 
 	interface DayStat {
 		dateStr: string;
@@ -30,7 +27,7 @@
 
 	interface Props {
 		attendanceRecords?: AttendanceRecord[];
-		currentDateStr?: string; // Anchor date e.g. '2026-08-22'
+		currentDateStr?: string;
 		employeeName?: string;
 	}
 
@@ -43,7 +40,7 @@
 	// Calculate Monday of current week
 	const weekDays = $derived.by(() => {
 		const current = new Date(currentDateStr + 'T00:00:00Z');
-		const dayOfWeek = current.getUTCDay(); // 0 is Sun, 1 is Mon...
+		const dayOfWeek = current.getUTCDay();
 		const diffToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
 		
 		const monday = new Date(current);
@@ -120,7 +117,7 @@
 	);
 </script>
 
-<div class="rounded-2xl border border-border bg-card p-5 shadow-2xs">
+<Card.Root class="p-5 shadow-2xs">
 	<!-- Header -->
 	<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4 pb-3 border-b border-border/80">
 		<div class="flex items-center gap-2.5">
@@ -128,7 +125,7 @@
 				<Calendar class="h-4 w-4" />
 			</div>
 			<div>
-				<h3 class="text-sm font-bold text-foreground">Weekly Timesheet &amp; Shift Summary</h3>
+				<h3 class="text-sm font-bold text-foreground">Weekly Timesheet & Shift Summary</h3>
 				<p class="text-[11px] text-muted-foreground">Monday to Sunday attendance breakdown and overtime tracking</p>
 			</div>
 		</div>
@@ -136,9 +133,9 @@
 		<!-- Progress Badge -->
 		<div class="flex items-center gap-2 text-xs">
 			<span class="text-muted-foreground">Goal: <strong>40h</strong></span>
-			<span class="rounded-full bg-primary/10 px-2.5 py-0.5 font-bold font-mono text-primary text-[11px]">
+			<Badge variant="secondary" class="font-bold font-mono text-primary text-[11px] px-2.5 py-0.5">
 				{progressPercent}% Complete
-			</span>
+			</Badge>
 		</div>
 	</div>
 
@@ -167,22 +164,22 @@
 				<!-- Status Badge Icon -->
 				<div class="my-1 flex items-center justify-center min-h-[22px]">
 					{#if day.status === 'present'}
-						<span class="inline-flex items-center gap-1 rounded-full bg-emerald-100 dark:bg-emerald-900/50 px-1.5 py-0.5 text-[9px] font-bold text-emerald-800 dark:text-emerald-300">
+						<Badge variant="secondary" class="gap-1 px-1.5 py-0.2 text-[9px] font-bold bg-emerald-100 dark:bg-emerald-900/50 text-emerald-800 dark:text-emerald-300">
 							<CheckCircle2 class="h-2.5 w-2.5 text-emerald-600" />
 							<span>{(day.workMinutes / 60).toFixed(1)}h</span>
-						</span>
+						</Badge>
 					{:else if day.status === 'on_leave'}
-						<span class="inline-flex items-center gap-1 rounded-full bg-blue-100 dark:bg-blue-900/50 px-1.5 py-0.5 text-[9px] font-bold text-blue-800 dark:text-blue-300">
+						<Badge variant="secondary" class="gap-1 px-1.5 py-0.2 text-[9px] font-bold bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-300">
 							<Plane class="h-2.5 w-2.5 text-blue-600" />
 							<span>Leave</span>
-						</span>
+						</Badge>
 					{:else if day.status === 'weekend'}
 						<span class="text-[9px] font-medium text-muted-foreground/60 italic">Weekend</span>
 					{:else if day.status === 'absent'}
-						<span class="inline-flex items-center gap-1 rounded-full bg-destructive/10 px-1.5 py-0.5 text-[9px] font-bold text-destructive">
+						<Badge variant="secondary" class="gap-1 px-1.5 py-0.2 text-[9px] font-bold bg-destructive/10 text-destructive">
 							<AlertCircle class="h-2.5 w-2.5" />
 							<span>Absent</span>
-						</span>
+						</Badge>
 					{:else}
 						<span class="text-[9px] text-muted-foreground">—</span>
 					{/if}
@@ -237,4 +234,4 @@
 			</div>
 		</div>
 	</div>
-</div>
+</Card.Root>

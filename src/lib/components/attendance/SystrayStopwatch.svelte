@@ -2,24 +2,25 @@
 	import { cn } from '$lib/utils';
 	import { attendanceState, AttendanceState } from '$lib/state/attendance.svelte';
 	import WorkTimer from './WorkTimer.svelte';
-	import type { BreakPreset } from './types';
 	import {
 		Clock,
 		Play,
-		Pause,
 		Coffee,
 		LogOut,
 		LogIn,
 		ChevronDown,
 		Flame,
-		CheckCircle2,
 		AlertTriangle,
 		Timer,
 		Utensils,
-		Calendar,
 		RotateCcw,
-		Zap
+		Zap,
+		Square
 	} from '@lucide/svelte';
+	import { Button } from '$lib/components/ui/button';
+	import { Badge } from '$lib/components/ui/badge';
+	import { Progress } from '$lib/components/ui/progress';
+	import * as Card from '$lib/components/ui/card';
 
 	interface Props {
 		class?: string;
@@ -98,13 +99,14 @@
 
 <div class={cn('relative inline-block text-left', className)} bind:this={dropdownRef}>
 	<!-- Systray Top Navbar Trigger Button -->
-	<button
-		type="button"
+	<Button
+		variant="outline"
+		size="sm"
 		onclick={toggleDropdown}
 		aria-expanded={isDropdownOpen}
 		aria-haspopup="true"
 		class={cn(
-			'group flex items-center gap-2 rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-all duration-150 focus:outline-hidden focus:ring-2 focus:ring-ring select-none',
+			'group h-8 gap-2 px-2.5 text-xs font-medium transition-all duration-150 select-none',
 			attendanceState.status === 'working' &&
 				'border-emerald-200/80 bg-emerald-50/70 text-emerald-950 hover:bg-emerald-100/80 dark:border-emerald-800/40 dark:bg-emerald-950/30 dark:text-emerald-200 dark:hover:bg-emerald-950/50 shadow-2xs',
 			attendanceState.status === 'on_break' &&
@@ -130,9 +132,10 @@
 
 		<!-- Status Label Badge -->
 		{#if !compact}
-			<span
+			<Badge
+				variant="secondary"
 				class={cn(
-					'hidden sm:inline-block rounded-sm px-1 py-0.2 text-[10px] font-semibold uppercase tracking-wider',
+					'hidden sm:inline-block px-1 py-0 text-[10px] font-semibold uppercase tracking-wider',
 					attendanceState.status === 'working' && 'bg-emerald-200/60 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-300',
 					attendanceState.status === 'on_break' && 'bg-amber-200/60 text-amber-800 dark:bg-amber-900/60 dark:text-amber-300 animate-pulse',
 					attendanceState.status === 'checked_out' && 'bg-muted text-muted-foreground'
@@ -143,7 +146,7 @@
 					: attendanceState.status === 'on_break'
 						? 'Break'
 						: 'Off'}
-			</span>
+			</Badge>
 		{/if}
 
 		<!-- Overtime Flame Indicator (Navbar Pill) -->
@@ -160,7 +163,7 @@
 				isDropdownOpen && 'rotate-180 text-foreground'
 			)}
 		/>
-	</button>
+	</Button>
 
 	<!-- Systray Detailed Popover Dropdown -->
 	{#if isDropdownOpen}
@@ -205,14 +208,15 @@
 				</div>
 
 				<!-- Reset Session Demo Button -->
-				<button
-					type="button"
+				<Button
+					variant="ghost"
+					size="icon"
 					onclick={() => attendanceState.resetSession(false)}
-					class="flex h-6 w-6 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+					class="h-6 w-6 text-muted-foreground"
 					title="Reset simulated session for testing"
 				>
 					<RotateCcw class="h-3 w-3" />
-				</button>
+				</Button>
 			</div>
 
 			<!-- Big Hero Live Work Stopwatch Display -->
@@ -231,10 +235,10 @@
 				/>
 
 				{#if attendanceState.status === 'on_break'}
-					<div class="mt-2 flex items-center gap-1.5 rounded-full bg-amber-100/80 px-2.5 py-0.5 text-xs font-semibold text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-300/40">
+					<Badge variant="secondary" class="mt-2 gap-1.5 bg-amber-100/80 px-2.5 py-0.5 text-xs font-semibold text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-300/40">
 						<Coffee class="h-3 w-3" />
 						<span>Break Time: {formattedBreakElapsed}</span>
-					</div>
+					</Badge>
 				{/if}
 			</div>
 
@@ -246,17 +250,7 @@
 						{attendanceState.shiftProgressPercent}% (8h Goal)
 					</span>
 				</div>
-				<div class="h-2 w-full overflow-hidden rounded-full bg-muted">
-					<div
-						class={cn(
-							'h-full rounded-full transition-all duration-500',
-							attendanceState.isOvertime
-								? 'bg-linear-to-r from-emerald-500 via-teal-500 to-orange-500'
-								: 'bg-emerald-500'
-						)}
-						style="width: {attendanceState.shiftProgressPercent}%"
-					></div>
-				</div>
+				<Progress value={attendanceState.shiftProgressPercent} class="h-2" />
 			</div>
 
 			<!-- Daily Metrics Summary Grid -->
@@ -296,82 +290,82 @@
 			<div class="space-y-2">
 				{#if attendanceState.status === 'checked_out'}
 					<!-- Check In Button -->
-					<button
-						type="button"
+					<Button
 						onclick={handleCheckIn}
-						class="flex w-full items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-xs font-bold text-white shadow-sm transition-all hover:bg-emerald-700 active:scale-[0.98] focus:outline-hidden focus:ring-2 focus:ring-emerald-500"
+						class="w-full gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
 					>
 						<LogIn class="h-4 w-4" />
 						<span>Check In & Start Shift</span>
-					</button>
+					</Button>
 				{:else if attendanceState.status === 'working'}
 					<!-- Break Reason Selection Drawer or Quick Action -->
 					{#if showBreakReasonPicker}
 						<div class="rounded-lg border border-border bg-muted/30 p-2.5 space-y-2 animate-in fade-in duration-150">
 							<div class="flex items-center justify-between text-[11px] font-semibold text-muted-foreground">
 								<span>Select Break Type</span>
-								<button
-									type="button"
+								<Button
+									variant="link"
+									size="xs"
 									onclick={() => (showBreakReasonPicker = false)}
-									class="text-[10px] text-primary hover:underline"
+									class="text-[10px] p-0 h-auto"
 								>
 									Cancel
-								</button>
+								</Button>
 							</div>
 							<div class="grid grid-cols-2 gap-1.5">
 								{#each breakPresets as preset}
 									{@const IconComponent = preset.icon}
-									<button
-										type="button"
+									<Button
+										variant="outline"
+										size="sm"
 										onclick={() => handleStartBreak(preset.label)}
-										class="flex items-center gap-2 rounded-md border border-border/80 bg-background px-2.5 py-1.5 text-left text-xs font-medium text-foreground hover:border-amber-300 hover:bg-amber-50/50 dark:hover:bg-amber-950/30 transition-all"
+										class="justify-start gap-2 h-8 text-xs font-medium"
 									>
 										<IconComponent class="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
 										<span class="truncate">{preset.label}</span>
-									</button>
+									</Button>
 								{/each}
 							</div>
 						</div>
 					{:else}
 						<div class="grid grid-cols-2 gap-2">
-							<button
-								type="button"
+							<Button
+								variant="outline"
 								onclick={() => (showBreakReasonPicker = true)}
-								class="flex items-center justify-center gap-1.5 rounded-lg border border-amber-300/80 bg-amber-50 px-3 py-2 text-xs font-bold text-amber-800 shadow-2xs transition-all hover:bg-amber-100 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200 dark:hover:bg-amber-950/60 active:scale-[0.98]"
+								class="gap-1.5 border-amber-300/80 bg-amber-50 text-amber-800 hover:bg-amber-100 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200 dark:hover:bg-amber-950/60 font-bold"
 							>
 								<Coffee class="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
 								<span>Take Break</span>
-							</button>
+							</Button>
 
-							<button
-								type="button"
+							<Button
+								variant="outline"
 								onclick={handleCheckOut}
-								class="flex items-center justify-center gap-1.5 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-bold text-rose-800 shadow-2xs transition-all hover:bg-rose-100 dark:border-rose-900/50 dark:bg-rose-950/40 dark:text-rose-300 dark:hover:bg-rose-950/60 active:scale-[0.98]"
+								class="gap-1.5 border-rose-200 bg-rose-50 text-rose-800 hover:bg-rose-100 dark:border-rose-900/50 dark:bg-rose-950/40 dark:text-rose-300 dark:hover:bg-rose-950/60 font-bold"
 							>
 								<LogOut class="h-3.5 w-3.5 text-rose-600 dark:text-rose-400" />
 								<span>Check Out</span>
-							</button>
+							</Button>
 						</div>
 					{/if}
 				{:else if attendanceState.status === 'on_break'}
 					<div class="grid grid-cols-2 gap-2">
-						<button
-							type="button"
+						<Button
 							onclick={handleEndBreak}
-							class="flex items-center justify-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-2 text-xs font-bold text-white shadow-2xs transition-all hover:bg-emerald-700 active:scale-[0.98] focus:outline-hidden focus:ring-2 focus:ring-emerald-500"
+							class="gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
 						>
 							<Play class="h-3.5 w-3.5" />
 							<span>Resume Work</span>
-						</button>
+						</Button>
 
-						<button
-							type="button"
+						<Button
+							variant="outline"
 							onclick={handleCheckOut}
-							class="flex items-center justify-center gap-1.5 rounded-lg border border-border bg-muted/60 px-3 py-2 text-xs font-semibold text-muted-foreground hover:bg-muted hover:text-foreground active:scale-[0.98]"
+							class="gap-1.5 font-semibold"
 						>
 							<LogOut class="h-3.5 w-3.5" />
 							<span>End Day</span>
-						</button>
+						</Button>
 					</div>
 				{/if}
 			</div>

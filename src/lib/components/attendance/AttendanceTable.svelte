@@ -17,14 +17,19 @@
 		Users,
 		Sparkles,
 		ChevronDown,
-		ChevronRight,
 		Eye,
 		X,
 		ArrowUpDown,
-		Building2,
-		Briefcase,
-		ShieldAlert
+		Building2
 	} from '@lucide/svelte';
+	import * as Table from '$lib/components/ui/table';
+	import * as Card from '$lib/components/ui/card';
+	import * as Dialog from '$lib/components/ui/dialog';
+	import { Badge } from '$lib/components/ui/badge';
+	import { Button } from '$lib/components/ui/button';
+	import { Input } from '$lib/components/ui/input';
+	import * as Avatar from '$lib/components/ui/avatar';
+	import { Progress } from '$lib/components/ui/progress';
 
 	interface Props {
 		records: AttendanceWithEmployee[];
@@ -225,26 +230,27 @@
 
 <div class={cn('space-y-4 font-sans', className)}>
 	<!-- Header Controls & Filter Bar -->
-	<div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-xl p-4 shadow-sm space-y-3.5">
+	<Card.Root class="p-4 shadow-2xs space-y-3.5">
 		<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
 			<!-- Search Bar -->
 			<div class="relative flex-1 min-w-[240px] max-w-lg">
-				<Search class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500" />
-				<input
+				<Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+				<Input
 					type="text"
 					bind:value={searchQuery}
 					placeholder="Search employee name, ID, department, title..."
-					class="w-full pl-9 pr-8 py-2 text-sm bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors"
+					class="pl-9 pr-8 h-9 text-xs"
 				/>
 				{#if searchQuery}
-					<button
-						type="button"
+					<Button
+						variant="ghost"
+						size="icon"
 						onclick={() => (searchQuery = '')}
-						class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-0.5 rounded"
+						class="absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6"
 						title="Clear search"
 					>
 						<X class="w-3.5 h-3.5" />
-					</button>
+					</Button>
 				{/if}
 			</div>
 
@@ -252,25 +258,25 @@
 			<div class="flex flex-wrap items-center gap-2.5">
 				<!-- Department Dropdown -->
 				<div class="relative">
-					<Building2 class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
+					<Building2 class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
 					<select
 						bind:value={selectedDepartment}
-						class="pl-8 pr-8 py-2 text-xs md:text-sm font-medium bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 cursor-pointer appearance-none"
+						class="w-full rounded-md border border-input bg-transparent pl-8 pr-8 py-1 text-xs text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring h-9 appearance-none cursor-pointer"
 					>
 						<option value="all">All Departments</option>
 						{#each derivedDepartments as dept}
 							<option value={dept}>{dept}</option>
 						{/each}
 					</select>
-					<ChevronDown class="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
+					<ChevronDown class="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
 				</div>
 
 				<!-- Date Filter -->
 				<div class="relative">
-					<input
+					<Input
 						type="date"
 						bind:value={selectedDate}
-						class="pl-3 pr-3 py-2 text-xs md:text-sm font-medium bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 cursor-pointer"
+						class="h-9 text-xs"
 						title="Filter by specific date"
 					/>
 					{#if selectedDate}
@@ -286,252 +292,244 @@
 				</div>
 
 				<!-- Export CSV Button -->
-				<button
-					type="button"
+				<Button
+					size="sm"
 					onclick={handleExportCsv}
 					disabled={isExporting || filteredRecords.length === 0}
-					class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs md:text-sm font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white shadow-sm hover:shadow transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+					class="gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white h-9"
 					title="Export filtered records to UTF-8 BOM CSV"
 				>
 					<Download class={cn('w-4 h-4', isExporting && 'animate-bounce')} />
 					<span>{isExporting ? 'Exporting...' : 'Export to CSV'}</span>
-				</button>
+				</Button>
 			</div>
 		</div>
 
 		<!-- Status Filter Pills -->
-		<div class="flex items-center gap-1.5 overflow-x-auto pt-1 pb-0.5 border-t border-slate-100 dark:border-slate-800/80 text-xs">
-			<span class="text-slate-400 dark:text-slate-500 font-medium mr-1 flex items-center gap-1">
+		<div class="flex items-center gap-1.5 overflow-x-auto pt-1 pb-0.5 border-t border-border text-xs">
+			<span class="text-muted-foreground font-medium mr-1 flex items-center gap-1">
 				<Filter class="w-3 h-3" /> Status:
 			</span>
 			{#each statusPills as pill}
-				<button
-					type="button"
+				<Button
+					variant={selectedStatus === pill.id ? 'default' : 'ghost'}
+					size="xs"
 					onclick={() => (selectedStatus = pill.id)}
-					class={cn(
-						'px-2.5 py-1 rounded-full font-medium transition-all cursor-pointer whitespace-nowrap',
-						selectedStatus === pill.id
-							? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 shadow-xs'
-							: 'bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
-					)}
+					class="h-7 text-xs font-medium rounded-full"
 				>
 					{pill.label}
-				</button>
+				</Button>
 			{/each}
 
 			{#if searchQuery || selectedDepartment !== 'all' || selectedStatus !== 'all' || selectedDate}
-				<button
-					type="button"
+				<Button
+					variant="link"
+					size="xs"
 					onclick={resetFilters}
-					class="ml-auto text-xs text-rose-600 dark:text-rose-400 hover:underline flex items-center gap-1 cursor-pointer font-medium"
+					class="ml-auto text-xs text-destructive hover:underline flex items-center gap-1 p-0 h-auto font-medium"
 				>
 					<X class="w-3 h-3" /> Clear Filters
-				</button>
+				</Button>
 			{/if}
 		</div>
-	</div>
+	</Card.Root>
 
 	<!-- Records Table -->
-	<div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-xl shadow-xs overflow-hidden">
+	<Card.Root class="p-0 overflow-hidden shadow-2xs">
 		{#if isLoading}
 			<div class="p-12 text-center space-y-3">
 				<div class="w-8 h-8 border-3 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
-				<p class="text-sm font-medium text-slate-500 dark:text-slate-400">Loading attendance records...</p>
+				<p class="text-sm font-medium text-muted-foreground">Loading attendance records...</p>
 			</div>
 		{:else if filteredRecords.length === 0}
 			<div class="p-12 text-center space-y-3">
-				<div class="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto text-slate-400">
+				<div class="w-12 h-12 rounded-full bg-muted flex items-center justify-center mx-auto text-muted-foreground">
 					<Users class="w-6 h-6" />
 				</div>
-				<h3 class="text-base font-semibold text-slate-800 dark:text-slate-200">No attendance records found</h3>
-				<p class="text-sm text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
+				<h3 class="text-base font-semibold text-foreground">No attendance records found</h3>
+				<p class="text-sm text-muted-foreground max-w-sm mx-auto">
 					No matching attendance records were found for the selected search filters.
 				</p>
 				{#if searchQuery || selectedDepartment !== 'all' || selectedStatus !== 'all' || selectedDate}
-					<button
-						type="button"
+					<Button
+						variant="outline"
+						size="sm"
 						onclick={resetFilters}
-						class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-lg hover:bg-emerald-100 transition-colors"
+						class="text-xs"
 					>
 						Reset All Filters
-					</button>
+					</Button>
 				{/if}
 			</div>
 		{:else}
 			<div class="overflow-x-auto">
-				<table class="w-full text-left border-collapse text-sm">
-					<thead>
-						<tr class="bg-slate-50/80 dark:bg-slate-800/50 border-b border-slate-200/80 dark:border-slate-800 text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 select-none">
+				<Table.Root>
+					<Table.Header>
+						<Table.Row class="bg-muted/30">
 							{#if showEmployeeColumns}
-								<th class="py-3 px-4 font-semibold">
+								<Table.Head>
 									<button
 										type="button"
 										onclick={() => handleSort('name')}
-										class="flex items-center gap-1.5 hover:text-slate-800 dark:hover:text-slate-200 cursor-pointer"
+										class="flex items-center gap-1.5 hover:text-foreground cursor-pointer font-semibold text-xs"
 									>
 										<span>Employee</span>
-										<ArrowUpDown class="w-3 h-3 text-slate-400" />
+										<ArrowUpDown class="w-3 h-3 text-muted-foreground" />
 									</button>
-								</th>
+								</Table.Head>
 							{/if}
-							<th class="py-3 px-4 font-semibold">
+							<Table.Head>
 								<button
 									type="button"
 									onclick={() => handleSort('date')}
-									class="flex items-center gap-1.5 hover:text-slate-800 dark:hover:text-slate-200 cursor-pointer"
+									class="flex items-center gap-1.5 hover:text-foreground cursor-pointer font-semibold text-xs"
 								>
 									<span>Date</span>
-									<ArrowUpDown class="w-3 h-3 text-slate-400" />
+									<ArrowUpDown class="w-3 h-3 text-muted-foreground" />
 								</button>
-							</th>
-							<th class="py-3 px-4 font-semibold">
+							</Table.Head>
+							<Table.Head>
 								<button
 									type="button"
 									onclick={() => handleSort('checkIn')}
-									class="flex items-center gap-1.5 hover:text-slate-800 dark:hover:text-slate-200 cursor-pointer"
+									class="flex items-center gap-1.5 hover:text-foreground cursor-pointer font-semibold text-xs"
 								>
 									<span>Check In / Out</span>
-									<ArrowUpDown class="w-3 h-3 text-slate-400" />
+									<ArrowUpDown class="w-3 h-3 text-muted-foreground" />
 								</button>
-							</th>
-							<th class="py-3 px-4 font-semibold">
+							</Table.Head>
+							<Table.Head>
 								<button
 									type="button"
 									onclick={() => handleSort('workMinutes')}
-									class="flex items-center gap-1.5 hover:text-slate-800 dark:hover:text-slate-200 cursor-pointer"
+									class="flex items-center gap-1.5 hover:text-foreground cursor-pointer font-semibold text-xs"
 								>
 									<span>Work Duration</span>
-									<ArrowUpDown class="w-3 h-3 text-slate-400" />
+									<ArrowUpDown class="w-3 h-3 text-muted-foreground" />
 								</button>
-							</th>
-							<th class="py-3 px-4 font-semibold">Break Duration</th>
-							<th class="py-3 px-4 font-semibold">
+							</Table.Head>
+							<Table.Head class="font-semibold text-xs">Break Duration</Table.Head>
+							<Table.Head>
 								<button
 									type="button"
 									onclick={() => handleSort('status')}
-									class="flex items-center gap-1.5 hover:text-slate-800 dark:hover:text-slate-200 cursor-pointer"
+									class="flex items-center gap-1.5 hover:text-foreground cursor-pointer font-semibold text-xs"
 								>
 									<span>Status</span>
-									<ArrowUpDown class="w-3 h-3 text-slate-400" />
+									<ArrowUpDown class="w-3 h-3 text-muted-foreground" />
 								</button>
-							</th>
-							<th class="py-3 px-4 font-semibold text-right">Actions</th>
-						</tr>
-					</thead>
-					<tbody class="divide-y divide-slate-200/60 dark:divide-slate-800/60 text-slate-700 dark:text-slate-200">
+							</Table.Head>
+							<Table.Head class="font-semibold text-xs text-right">Actions</Table.Head>
+						</Table.Row>
+					</Table.Header>
+					<Table.Body>
 						{#each filteredRecords as record (record.id)}
 							{@const isOt = (record.overtimeMinutes && record.overtimeMinutes > 0) || (record.totalWorkMinutes && record.totalWorkMinutes > 480)}
 							{@const otMins = record.overtimeMinutes || Math.max(0, (record.totalWorkMinutes || 0) - 480)}
 							{@const hasActiveBreak = record.breaks?.some((b) => !b.endTime)}
 							
-							<tr class="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors">
+							<Table.Row class="hover:bg-muted/40 transition-colors">
 								{#if showEmployeeColumns}
 									<!-- Employee Profile Column -->
-									<td class="py-3 px-4">
+									<Table.Cell>
 										<div class="flex items-center gap-3">
-											{#if record.employee?.avatarUrl}
-												<img
-													src={record.employee.avatarUrl}
-													alt="{record.employee.firstName} avatar"
-													class="w-9 h-9 rounded-full object-cover border border-slate-200 dark:border-slate-700 shadow-xs"
-												/>
-											{:else}
-												<div class="w-9 h-9 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 flex items-center justify-center font-bold text-xs shadow-xs">
+											<Avatar.Root class="h-9 w-9 ring-1 ring-border">
+												{#if record.employee?.avatarUrl}
+													<Avatar.Image src={record.employee.avatarUrl} alt="{record.employee.firstName} avatar" />
+												{/if}
+												<Avatar.Fallback class="bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-bold text-xs">
 													{getInitials(record.employee?.firstName, record.employee?.lastName)}
-												</div>
-											{/if}
+												</Avatar.Fallback>
+											</Avatar.Root>
 											<div>
-												<div class="font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
+												<div class="font-semibold text-foreground flex items-center gap-1.5">
 													<span>
 														{record.employee ? `${record.employee.firstName} ${record.employee.lastName}` : 'Unknown Employee'}
 													</span>
-													<span class="text-[11px] font-mono font-medium px-1.5 py-0.2 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+													<Badge variant="outline" class="text-[11px] font-mono font-medium px-1.5 py-0">
 														{record.employee?.id || record.employeeId}
-													</span>
+													</Badge>
 												</div>
-												<div class="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-2 mt-0.5">
+												<div class="text-xs text-muted-foreground flex items-center gap-2 mt-0.5">
 													{#if record.employee?.department}
 														<span class="flex items-center gap-1 font-medium">
-															<Building2 class="w-3 h-3 text-slate-400" />
+															<Building2 class="w-3 h-3 text-muted-foreground" />
 															{record.employee.department}
 														</span>
 													{/if}
 													{#if record.employee?.jobTitle}
-														<span class="text-slate-300 dark:text-slate-600">•</span>
+														<span class="text-muted-foreground">•</span>
 														<span>{record.employee.jobTitle}</span>
 													{/if}
 												</div>
 											</div>
 										</div>
-									</td>
+									</Table.Cell>
 								{/if}
 
 								<!-- Date Column -->
-								<td class="py-3 px-4 whitespace-nowrap">
-									<div class="flex items-center gap-1.5 font-medium text-slate-800 dark:text-slate-200 text-xs">
-										<Calendar class="w-3.5 h-3.5 text-slate-400" />
+								<Table.Cell class="whitespace-nowrap">
+									<div class="flex items-center gap-1.5 font-medium text-foreground text-xs">
+										<Calendar class="w-3.5 h-3.5 text-muted-foreground" />
 										{formatDateClean(record.date)}
 									</div>
-								</td>
+								</Table.Cell>
 
 								<!-- Check In / Check Out Column -->
-								<td class="py-3 px-4 whitespace-nowrap">
+								<Table.Cell class="whitespace-nowrap">
 									<div class="flex flex-col gap-0.5 text-xs">
 										<div class="flex items-center gap-1.5 font-medium text-emerald-700 dark:text-emerald-400">
 											<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
 											<span>In: {formatTime(record.checkIn)}</span>
 										</div>
-										<div class="flex items-center gap-1.5 font-medium text-slate-500 dark:text-slate-400">
+										<div class="flex items-center gap-1.5 font-medium text-muted-foreground">
 											<span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
 											<span>Out: {formatTime(record.checkOut)}</span>
 										</div>
 									</div>
-								</td>
+								</Table.Cell>
 
 								<!-- Work Duration Column -->
-								<td class="py-3 px-4 whitespace-nowrap">
+								<Table.Cell class="whitespace-nowrap">
 									<div class="flex items-center gap-2">
 										<div>
-											<div class="font-semibold text-xs text-slate-900 dark:text-slate-100 flex items-center gap-1">
-												<Clock class="w-3.5 h-3.5 text-slate-400" />
+											<div class="font-semibold text-xs text-foreground flex items-center gap-1">
+												<Clock class="w-3.5 h-3.5 text-muted-foreground" />
 												{formatDurationHuman(record.totalWorkMinutes || 0)}
 											</div>
-											<!-- Shift progress indicator bar (8h = 480 mins) -->
-											<div class="w-24 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full mt-1.5 overflow-hidden">
-												<div
-													class={cn(
-														'h-full rounded-full transition-all',
-														isOt ? 'bg-amber-500' : 'bg-emerald-500'
-													)}
-													style="width: {Math.min(100, Math.round(((record.totalWorkMinutes || 0) / 480) * 100))}%"
-												></div>
+											<div class="w-24 mt-1.5">
+												<Progress
+													value={Math.min(100, Math.round(((record.totalWorkMinutes || 0) / 480) * 100))}
+													class="h-1.5"
+												/>
 											</div>
 										</div>
 
-										<!-- Overtime Badge -->
 										{#if isOt}
-											<span
-												class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200 dark:border-amber-800 shadow-2xs"
+											<Badge
+												variant="secondary"
+												class="gap-1 px-1.5 py-0.5 text-[11px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200 dark:border-amber-800"
 												title="Overtime: {formatDurationHuman(otMins)}"
 											>
 												<Flame class="w-3 h-3 text-amber-600 dark:text-amber-400 fill-amber-500" />
 												+{formatDurationHuman(otMins)} OT
-											</span>
+											</Badge>
 										{/if}
 									</div>
-								</td>
+								</Table.Cell>
 
 								<!-- Break Duration Column -->
-								<td class="py-3 px-4 whitespace-nowrap">
+								<Table.Cell class="whitespace-nowrap">
 									<div class="flex items-center gap-1.5">
-										<button
-											type="button"
+										<Button
+											variant="outline"
+											size="xs"
 											onclick={() => openBreaksModal(record)}
 											class={cn(
-												'inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-xs font-medium border transition-colors cursor-pointer',
+												'gap-1 h-7 text-xs font-medium',
 												(record.totalBreakMinutes || 0) > 0 || hasActiveBreak
 													? 'bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800/80 hover:bg-amber-100'
-													: 'bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700'
+													: ''
 											)}
 										>
 											<Coffee class="w-3 h-3" />
@@ -539,138 +537,130 @@
 											{#if record.breaks && record.breaks.length > 0}
 												<span class="text-[10px] opacity-75 font-mono">({record.breaks.length})</span>
 											{/if}
-										</button>
+										</Button>
 										{#if hasActiveBreak}
-											<span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500 text-white animate-pulse">
+											<Badge class="px-1.5 py-0.2 text-[10px] font-bold bg-amber-500 text-white animate-pulse">
 												Active
-											</span>
+											</Badge>
 										{/if}
 									</div>
-								</td>
+								</Table.Cell>
 
 								<!-- Status Column -->
-								<td class="py-3 px-4 whitespace-nowrap">
+								<Table.Cell class="whitespace-nowrap">
 									{#if hasActiveBreak}
-										<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 dark:bg-amber-950/80 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+										<Badge variant="secondary" class="gap-1.5 px-2.5 py-0.5 text-xs font-semibold bg-amber-100 text-amber-800 dark:bg-amber-950/80 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
 											<span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-ping"></span>
 											On Break
-										</span>
+										</Badge>
 									{:else if record.status === 'present'}
-										<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+										<Badge variant="secondary" class="gap-1 px-2.5 py-0.5 text-xs font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
 											<CheckCircle2 class="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
 											Present
-										</span>
+										</Badge>
 									{:else if record.status === 'absent'}
-										<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-100 text-rose-800 dark:bg-rose-950/80 dark:text-rose-300 border border-rose-200 dark:border-rose-800">
+										<Badge variant="secondary" class="gap-1 px-2.5 py-0.5 text-xs font-semibold bg-rose-100 text-rose-800 dark:bg-rose-950/80 dark:text-rose-300 border border-rose-200 dark:border-rose-800">
 											<XCircle class="w-3 h-3 text-rose-600 dark:text-rose-400" />
 											Absent
-										</span>
+										</Badge>
 									{:else if record.status === 'half_day'}
-										<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 dark:bg-blue-950/80 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+										<Badge variant="secondary" class="gap-1 px-2.5 py-0.5 text-xs font-semibold bg-blue-100 text-blue-800 dark:bg-blue-950/80 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
 											<AlertCircle class="w-3 h-3 text-blue-600 dark:text-blue-400" />
 											Half Day
-										</span>
+										</Badge>
 									{:else if record.status === 'on_leave'}
-										<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-100 text-purple-800 dark:bg-purple-950/80 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
+										<Badge variant="secondary" class="gap-1 px-2.5 py-0.5 text-xs font-semibold bg-purple-100 text-purple-800 dark:bg-purple-950/80 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
 											<Sparkles class="w-3 h-3 text-purple-600 dark:text-purple-400" />
 											On Leave
-										</span>
+										</Badge>
 									{:else}
-										<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300">
+										<Badge variant="secondary" class="px-2 py-0.5 text-xs font-semibold">
 											{record.status}
-										</span>
+										</Badge>
 									{/if}
-								</td>
+								</Table.Cell>
 
 								<!-- Actions Column -->
-								<td class="py-3 px-4 whitespace-nowrap text-right">
-									<button
-										type="button"
+								<Table.Cell class="whitespace-nowrap text-right">
+									<Button
+										variant="ghost"
+										size="xs"
 										onclick={() => openBreaksModal(record)}
-										class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-lg transition-colors cursor-pointer"
+										class="gap-1 h-7 text-xs font-semibold"
 										title="View Breaks & Details"
 									>
 										<Eye class="w-3.5 h-3.5" />
 										<span>Breaks</span>
-									</button>
-								</td>
-							</tr>
+									</Button>
+								</Table.Cell>
+							</Table.Row>
 						{/each}
-					</tbody>
-				</table>
+					</Table.Body>
+				</Table.Root>
 			</div>
 
 			<!-- Footer Summary Bar -->
-			<div class="px-4 py-3 bg-slate-50/70 dark:bg-slate-800/40 border-t border-slate-200/80 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500 dark:text-slate-400 font-medium">
+			<div class="px-4 py-3 bg-muted/30 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-muted-foreground font-medium">
 				<div>
-					Showing <span class="font-bold text-slate-800 dark:text-slate-200">{filteredRecords.length}</span> of{' '}
-					<span class="font-bold text-slate-800 dark:text-slate-200">{records.length}</span> records
+					Showing <span class="font-bold text-foreground">{filteredRecords.length}</span> of{' '}
+					<span class="font-bold text-foreground">{records.length}</span> records
 				</div>
 				<div class="flex items-center gap-4 text-xs">
-					<span>Standard Shift: <strong class="text-slate-700 dark:text-slate-300">8h 00m</strong></span>
+					<span>Standard Shift: <strong class="text-foreground">8h 00m</strong></span>
 					<span>•</span>
-					<span>Overtime Threshold: <strong class="text-slate-700 dark:text-slate-300">&gt; 8h</strong></span>
+					<span>Overtime Threshold: <strong class="text-foreground">&gt; 8h</strong></span>
 				</div>
 			</div>
 		{/if}
-	</div>
+	</Card.Root>
 
 	<!-- Breaks Detail Modal -->
-	{#if activeBreakRecord}
-		<div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs">
-			<div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl max-w-lg w-full overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-				<div class="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
-					<div class="flex items-center gap-2.5">
-						<div class="p-2 bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 rounded-lg">
-							<Coffee class="w-5 h-5" />
-						</div>
-						<div>
-							<h3 class="text-base font-bold text-slate-900 dark:text-slate-100">
-								Break Details — {activeBreakRecord.employee?.firstName || 'Employee'}
-							</h3>
-							<p class="text-xs text-slate-500 dark:text-slate-400">
-								{formatDateClean(activeBreakRecord.date)} • Total: {formatDurationHuman(activeBreakRecord.totalBreakMinutes || 0)}
-							</p>
-						</div>
+	<Dialog.Root open={!!activeBreakRecord} onOpenChange={(open) => { if (!open) activeBreakRecord = null; }}>
+		{#if activeBreakRecord}
+			<Dialog.Content class="sm:max-w-lg p-0 overflow-hidden gap-0">
+				<Dialog.Header class="flex flex-row items-center gap-2.5 p-5 border-b border-border bg-muted/20 space-y-0">
+					<div class="p-2 bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 rounded-lg shrink-0">
+						<Coffee class="w-5 h-5" />
 					</div>
-					<button
-						type="button"
-						onclick={() => (activeBreakRecord = null)}
-						class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-					>
-						<X class="w-5 h-5" />
-					</button>
-				</div>
+					<div>
+						<Dialog.Title class="text-base font-bold text-foreground">
+							Break Details — {activeBreakRecord.employee?.firstName || 'Employee'}
+						</Dialog.Title>
+						<Dialog.Description class="text-xs text-muted-foreground">
+							{formatDateClean(activeBreakRecord.date)} • Total: {formatDurationHuman(activeBreakRecord.totalBreakMinutes || 0)}
+						</Dialog.Description>
+					</div>
+				</Dialog.Header>
 
 				<div class="p-5 max-h-96 overflow-y-auto space-y-3">
 					{#if !activeBreakRecord.breaks || activeBreakRecord.breaks.length === 0}
-						<div class="text-center py-6 text-slate-400 text-xs">
+						<div class="text-center py-6 text-muted-foreground text-xs">
 							<Coffee class="w-8 h-8 mx-auto mb-2 opacity-40" />
 							No break intervals recorded for this session.
 						</div>
 					{:else}
 						{#each activeBreakRecord.breaks as brk, idx}
-							<div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-700/60 text-xs">
+							<div class="flex items-center justify-between p-3 rounded-xl bg-muted/30 border border-border text-xs">
 								<div class="flex items-center gap-3">
 									<span class="w-6 h-6 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 font-bold flex items-center justify-center text-[11px]">
 										{idx + 1}
 									</span>
 									<div>
-										<div class="font-semibold text-slate-800 dark:text-slate-200">
+										<div class="font-semibold text-foreground">
 											{brk.reason || 'General Break'}
 										</div>
-										<div class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+										<div class="text-[11px] text-muted-foreground mt-0.5">
 											{formatTime(brk.startTime)} → {brk.endTime ? formatTime(brk.endTime) : 'In Progress...'}
 										</div>
 									</div>
 								</div>
-								<div class="font-bold text-slate-700 dark:text-slate-300 text-right">
+								<div class="font-bold text-foreground text-right">
 									{#if brk.endTime}
 										{formatDurationHuman(brk.durationMinutes || 0)}
 									{:else}
-										<span class="inline-flex items-center gap-1 text-amber-600 dark:text-amber-400 font-semibold animate-pulse">
+										<Badge class="bg-amber-500 text-white font-semibold animate-pulse">
 											Active
-										</span>
+										</Badge>
 									{/if}
 								</div>
 							</div>
@@ -678,16 +668,15 @@
 					{/if}
 				</div>
 
-				<div class="px-5 py-3.5 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800 flex justify-end">
-					<button
-						type="button"
+				<Dialog.Footer class="p-4 bg-muted/20 border-t border-border">
+					<Button
+						size="sm"
 						onclick={() => (activeBreakRecord = null)}
-						class="px-4 py-2 text-xs font-semibold rounded-lg bg-slate-900 hover:bg-slate-800 text-white dark:bg-slate-100 dark:text-slate-900 transition-colors"
 					>
 						Close
-					</button>
-				</div>
-			</div>
-		</div>
-	{/if}
+					</Button>
+				</Dialog.Footer>
+			</Dialog.Content>
+		{/if}
+	</Dialog.Root>
 </div>
