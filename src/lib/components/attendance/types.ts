@@ -15,12 +15,16 @@ import type {
 	AttendanceWithEmployee
 } from '$lib/types/attendance';
 
+export type AttendanceMode = 'checked_out' | 'working' | 'on_break';
+export type WorkTimerFormat = 'digital' | 'verbose' | 'compact' | 'auto';
+export type WorkTimerSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+
 export interface SystrayStopwatchProps {
-	employeeId: string;
+	employeeId?: string;
 	employeeName?: string;
 	initialSession?: AttendanceSessionState | null;
-	onCheckIn?: (timestamp: string) => Promise<void> | void;
-	onCheckOut?: (timestamp: string) => Promise<void> | void;
+	onCheckIn?: (timestamp?: string) => Promise<void> | void;
+	onCheckOut?: (timestamp?: string) => Promise<void> | void;
 	onBreakStart?: (reason?: string) => Promise<void> | void;
 	onBreakEnd?: () => Promise<void> | void;
 	compact?: boolean;
@@ -28,13 +32,26 @@ export interface SystrayStopwatchProps {
 }
 
 export interface WorkTimerProps {
-	elapsedSeconds: number;
-	status: StopwatchStatus;
+	seconds?: number;
+	elapsedSeconds?: number;
+	status?: StopwatchStatus | AttendanceMode;
 	breakSeconds?: number;
-	size?: 'sm' | 'md' | 'lg';
+	format?: WorkTimerFormat;
+	size?: WorkTimerSize;
 	showSeconds?: boolean;
 	showControls?: boolean;
+	showOvertimeBadge?: boolean;
+	showPulse?: boolean;
+	showIcon?: boolean;
+	overtimeThresholdSeconds?: number;
 	class?: string;
+}
+
+export interface BreakPreset {
+	id: string;
+	label: string;
+	iconName: 'coffee' | 'utensils' | 'users' | 'sparkles' | 'timer' | 'zap';
+	defaultMinutes?: number;
 }
 
 export interface BreakModalProps {
