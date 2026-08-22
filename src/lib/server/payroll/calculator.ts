@@ -47,7 +47,19 @@ export const PAYROLL_CONSTANTS = {
  * - Net Salary = Gross Salary - Total Deductions
  * - Round all calculated components to 2 decimal places.
  */
-export function calculateSalaryBreakdown(monthlyWage: number): SalaryBreakdown {
+export interface SalaryBreakdownOptions {
+	customBonus?: number;
+	customDeductions?: number;
+	standardAllowance?: number;
+	professionalTaxThreshold?: number;
+	professionalTaxAmount?: number;
+	round?: boolean;
+}
+
+export function calculateSalaryBreakdown(
+	monthlyWage: number,
+	options?: SalaryBreakdownOptions
+): SalaryBreakdown {
 	const sanitizedWage = Math.max(0, Number(monthlyWage) || 0);
 
 	if (sanitizedWage === 0) {
