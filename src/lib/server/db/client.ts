@@ -1,18 +1,33 @@
-import { Database } from 'bun:sqlite';
-import { drizzle } from 'drizzle-orm/bun-sqlite';
+import { createRequire } from 'module';
 import * as schema from './schema';
 import path from 'path';
 
+const require = createRequire(import.meta.url);
 const dbPath = process.env.DATABASE_URL || path.resolve(process.cwd(), 'dayflow.db');
 
-export const sqlite = new Database(dbPath, { create: true });
+let sqliteInstance: any;
+let drizzleDb: any;
 
-// Enable WAL mode & foreign keys
-sqlite.run('PRAGMA journal_mode = WAL;');
-sqlite.run('PRAGMA foreign_keys = ON;');
+const isBun = typeof (process.versions as any).bun !== 'undefined';
+
+if (isBun) {
+	const { Database } = require('bun:sqlite');
+	const { drizzle } = require('drizzle-orm/bun-sqlite');
+	sqliteInstance = new Database(dbPath, { create: true });
+	sqliteInstance.run('PRAGMA journal_mode = WAL;');
+	sqliteInstance.run('PRAGMA foreign_keys = ON;');
+	drizzleDb = drizzle(sqliteInstance, { schema });
+} else {
+	const Database = require('better-sqlite3');
+	const { drizzle } = require('drizzle-orm/better-sqlite3');
+	sqliteInstance = new Database(dbPath);
+	sqliteInstance.pragma('journal_mode = WAL');
+	sqliteInstance.pragma('foreign_keys = ON');
+	drizzleDb = drizzle(sqliteInstance, { schema });
+}
 
 // Initialize tables if not exist
-sqlite.run(`
+const initSql = `
 	CREATE TABLE IF NOT EXISTS users (
 		id TEXT PRIMARY KEY,
 		email TEXT NOT NULL UNIQUE,
@@ -147,7 +162,14 @@ sqlite.run(`
 		metadata TEXT,
 		created_at TEXT NOT NULL
 	);
-`);
+`;
 
-export const db = drizzle(sqlite, { schema });
+if (isBun) {
+	sqliteInstance.run(initSql);
+} else {
+	sqliteInstance.exec(initSql);
+}
+
+export const sqlite = sqliteInstance;
+export const db = drizzleDb;
 export default db;
