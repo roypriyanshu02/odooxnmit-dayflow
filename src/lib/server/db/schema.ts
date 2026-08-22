@@ -137,14 +137,29 @@ export const chatter = sqliteTable('chatter', {
 	createdAt: text('created_at').notNull()
 });
 
+export const sessions = sqliteTable('sessions', {
+	id: text('id').primaryKey(),
+	userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+	expiresAt: integer('expires_at').notNull(),
+	createdAt: text('created_at').notNull()
+});
+
 // Relations
 export const usersRelations = relations(users, ({ one, many }) => ({
 	employee: one(employees, {
 		fields: [users.id],
 		references: [employees.userId]
 	}),
+	sessions: many(sessions),
 	approvedLeaves: many(leaveRequests),
 	chatterEntries: many(chatter)
+}));
+
+export const sessionsRelations = relations(sessions, ({ one }) => ({
+	user: one(users, {
+		fields: [sessions.userId],
+		references: [users.id]
+	})
 }));
 
 export const employeesRelations = relations(employees, ({ one, many }) => ({

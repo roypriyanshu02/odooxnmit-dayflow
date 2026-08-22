@@ -164,6 +164,13 @@ const initSql = `
 		metadata TEXT,
 		created_at TEXT NOT NULL
 	);
+
+	CREATE TABLE IF NOT EXISTS sessions (
+		id TEXT PRIMARY KEY,
+		user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+		expires_at INTEGER NOT NULL,
+		created_at TEXT NOT NULL
+	);
 `;
 
 if (isBun) {

@@ -1,6 +1,7 @@
 import { sqlite, db } from './client';
 import * as schema from './schema';
 import type { Certification, WorkHistory } from '$lib/types';
+import { hashPassword } from '../auth';
 import crypto from 'crypto';
 
 // Dynamic Employee ID Generator: OI + 2 letters firstName + 2 letters lastName + year + 4-digit serial
@@ -491,6 +492,7 @@ export async function seedDatabase() {
 
 	// 1. Clear existing records in cascade order
 	sqlite.run('PRAGMA foreign_keys = OFF;');
+	sqlite.run('DELETE FROM sessions;');
 	sqlite.run('DELETE FROM chatter;');
 	sqlite.run('DELETE FROM payslips;');
 	sqlite.run('DELETE FROM leave_requests;');
@@ -504,7 +506,7 @@ export async function seedDatabase() {
 	console.log('🧹 Cleaned existing database records.');
 
 	// 2. Hash standard demo password
-	const defaultPasswordHash = await Bun.password.hash('Dayflow@2026');
+	const defaultPasswordHash = await hashPassword('Dayflow@2026');
 	const now = new Date().toISOString();
 
 	// 3. Insert Users and Employees
