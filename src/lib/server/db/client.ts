@@ -16,6 +16,7 @@ if (isBun) {
 	sqliteInstance = new Database(dbPath, { create: true });
 	sqliteInstance.run('PRAGMA journal_mode = WAL;');
 	sqliteInstance.run('PRAGMA foreign_keys = ON;');
+	sqliteInstance.run('PRAGMA busy_timeout = 10000;');
 	drizzleDb = drizzle(sqliteInstance, { schema });
 } else {
 	const Database = require('better-sqlite3');
@@ -23,6 +24,7 @@ if (isBun) {
 	sqliteInstance = new Database(dbPath);
 	sqliteInstance.pragma('journal_mode = WAL');
 	sqliteInstance.pragma('foreign_keys = ON');
+	sqliteInstance.pragma('busy_timeout = 10000');
 	drizzleDb = drizzle(sqliteInstance, { schema });
 }
 

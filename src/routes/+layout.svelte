@@ -6,6 +6,7 @@
 	import KeyboardShortcutsModal from '$lib/components/layout/KeyboardShortcutsModal.svelte';
 	import { goto } from '$app/navigation';
 	import { palette } from '$lib/state/palette.svelte';
+	import { attendanceState } from '$lib/state/attendance.svelte';
 	import { isInputElement } from '$lib/utils/keyboard-shortcuts';
 
 	let { children } = $props();
@@ -49,6 +50,12 @@
 			} else if (k === 'p') {
 				e.preventDefault();
 				goto('/payroll');
+			} else if (k === 'c') {
+				e.preventDefault();
+				attendanceState.toggleCheckIn();
+			} else if (k === 'b') {
+				e.preventDefault();
+				attendanceState.toggleBreak();
 			}
 		}
 	}
