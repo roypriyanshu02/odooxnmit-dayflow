@@ -5,6 +5,7 @@
 	import ResumeTab from '$lib/components/employees/tabs/ResumeTab.svelte';
 	import PrivateInfoTab from '$lib/components/employees/tabs/PrivateInfoTab.svelte';
 	import SalaryInfoTab from '$lib/components/employees/tabs/SalaryInfoTab.svelte';
+	import ChatterFeed from '$lib/components/employees/ChatterFeed.svelte';
 	import type { Component } from 'svelte';
 	import {
 		ArrowLeft,
@@ -312,5 +313,14 @@
 				<SalaryInfoTab {employee} />
 			{/if}
 		</div>
+	</section>
+
+	<!-- Odoo Chatter Feed & Activity Audit Trail Section -->
+	<section class="mt-8">
+		<ChatterFeed
+			entityId={employee.id}
+			entityType="employee"
+			entityName="{employee.firstName} {employee.lastName}"
+		/>
 	</section>
 </div>
