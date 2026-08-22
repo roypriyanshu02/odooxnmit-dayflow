@@ -147,6 +147,14 @@ export const POST: RequestHandler = async ({ request }) => {
 					updatedAt: now
 				})
 				.where(eq(schema.leaveBalances.id, balance.id));
+
+			// Automatically sync approved leave days into daily attendance records
+			try {
+				const { syncApprovedLeaveToAttendance } = await import('$lib/server/leaves/sync-attendance');
+				await syncApprovedLeaveToAttendance(leaveRecord.id);
+			} catch (syncErr) {
+				console.error('Failed to auto-sync approved leave to attendance:', syncErr);
+			}
 		} else {
 			// action === 'reject'
 			await db
