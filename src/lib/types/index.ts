@@ -87,36 +87,7 @@ export interface Employee {
 
 export * from './attendance';
 
-export type LeaveType = 'paid_time_off' | 'sick_leave' | 'unpaid_leave';
-export type LeaveStatus = 'pending' | 'approved' | 'rejected';
-
-export interface LeaveBalance {
-	id: string;
-	employeeId: string;
-	year: number;
-	paidTimeOffTotal: number;
-	paidTimeOffUsed: number;
-	sickLeaveTotal: number;
-	sickLeaveUsed: number;
-	unpaidLeaveUsed: number;
-	updatedAt: string;
-}
-
-export interface LeaveRequest {
-	id: string;
-	employeeId: string;
-	leaveType: LeaveType;
-	startDate: string; // YYYY-MM-DD
-	endDate: string; // YYYY-MM-DD
-	totalDays: number;
-	reason: string;
-	status: LeaveStatus;
-	approvedBy?: string | null;
-	rejectionReason?: string | null;
-	attachmentUrl?: string | null;
-	createdAt: string;
-	updatedAt: string;
-}
+export * from './leaves';
 
 export type PayslipStatus = 'draft' | 'processed' | 'paid';
 
