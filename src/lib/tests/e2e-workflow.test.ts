@@ -151,7 +151,7 @@ describe('Dayflow HRMS End-to-End Cross-Module Integration Suite', () => {
 			expect(logs.length).toBeGreaterThan(0);
 
 			// Check entity types
-			const entityTypes = new Set(logs.map((l) => l.entityType));
+			const entityTypes = new Set(logs.map((l: any) => l.entityType));
 			expect(entityTypes.has('employee') || entityTypes.has('leave') || entityTypes.has('payroll')).toBe(true);
 		});
 	});
