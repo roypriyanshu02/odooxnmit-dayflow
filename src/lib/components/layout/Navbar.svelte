@@ -2,6 +2,7 @@
 	import { page } from '$app/state';
 	import { palette } from '$lib/state/palette.svelte';
 	import RoleSwitcher from './RoleSwitcher.svelte';
+	import SystrayStopwatch from '$lib/components/attendance/SystrayStopwatch.svelte';
 	import type { Component } from 'svelte';
 	import {
 		LayoutDashboard,
@@ -121,24 +122,8 @@
 				</kbd>
 			</button>
 
-			<!-- Systray Attendance Stopwatch Widget -->
-			<button
-				type="button"
-				onclick={toggleAttendance}
-				class="group flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-all focus:outline-hidden {isCheckedIn
-					? 'border-emerald-200 bg-emerald-50/70 text-emerald-900 dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-300 hover:bg-emerald-100/80'
-					: 'border-amber-200 bg-amber-50/70 text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-300 hover:bg-amber-100/80'}"
-				title={isCheckedIn ? 'Status: Checked In. Click to toggle break / checkout' : 'Status: Checked Out. Click to check in'}
-			>
-				<span class="relative flex h-2 w-2">
-					{#if isCheckedIn}
-						<span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
-					{/if}
-					<span class="relative inline-flex h-2 w-2 rounded-full {isCheckedIn ? 'bg-emerald-500' : 'bg-amber-500'}"></span>
-				</span>
-				<Clock class="h-3.5 w-3.5 {isCheckedIn ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}" />
-				<span class="hidden sm:inline-block font-mono font-semibold text-[11px]">{isCheckedIn ? formatTimer() : 'Off Duty'}</span>
-			</button>
+			<!-- Live Systray Attendance Stopwatch Widget -->
+			<SystrayStopwatch />
 
 			<!-- Embedded Role Switcher Component -->
 			<RoleSwitcher />
