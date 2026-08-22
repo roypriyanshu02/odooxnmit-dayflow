@@ -1,5 +1,8 @@
 <script lang="ts">
-	import { Printer, Download, ArrowLeft, ShieldCheck, CheckCircle2, QrCode } from '@lucide/svelte';
+	import { Printer, ArrowLeft, CheckCircle2, QrCode } from '@lucide/svelte';
+	import { Button } from '$lib/components/ui/button';
+	import { Badge } from '$lib/components/ui/badge';
+	import * as Card from '$lib/components/ui/card';
 
 	interface PayslipData {
 		id: string;
@@ -145,27 +148,31 @@
 <div class="space-y-6">
 	<!-- Actions Bar (Hidden in Print) -->
 	<div class="print:hidden flex items-center justify-between">
-		<a
+		<Button
+			variant="ghost"
+			size="sm"
 			href="/payroll"
-			class="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
+			class="gap-1.5 text-xs text-muted-foreground hover:text-foreground"
 		>
-			<ArrowLeft class="h-4 w-4" /> Back to Payroll Hub
-		</a>
+			<ArrowLeft class="h-4 w-4" />
+			<span>Back to Payroll Hub</span>
+		</Button>
 		<div class="flex items-center gap-2">
-			<button
-				type="button"
+			<Button
+				size="sm"
 				onclick={handlePrint}
-				class="flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-xs hover:bg-primary/90 transition-all"
+				class="gap-1.5 font-semibold shadow-xs"
 			>
-				<Printer class="h-3.5 w-3.5" /> Print Payslip / PDF
-			</button>
+				<Printer class="h-3.5 w-3.5" />
+				<span>Print Payslip / PDF</span>
+			</Button>
 		</div>
 	</div>
 
 	<!-- Printable Official Salary Voucher Container -->
-	<div
+	<Card.Root
 		id="printable-slip"
-		class="mx-auto max-w-3xl rounded-xl border border-border/80 bg-card p-8 shadow-sm text-foreground print:border-none print:shadow-none print:p-0"
+		class="mx-auto max-w-3xl p-8 shadow-sm text-foreground print:border-none print:shadow-none print:p-0"
 	>
 		<!-- Corporate Header -->
 		<div class="border-b border-border/80 pb-5 mb-5 flex items-start justify-between">
@@ -181,9 +188,9 @@
 				</div>
 			</div>
 			<div class="text-right">
-				<span class="rounded bg-primary/10 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-primary border border-primary/20">
+				<Badge variant="secondary" class="font-bold uppercase tracking-wider text-primary bg-primary/10 border-primary/20 text-[11px] px-2.5 py-0.5">
 					Salary Slip
-				</span>
+				</Badge>
 				<div class="text-sm font-bold text-foreground font-sans mt-2">
 					{monthNames[payslip.month - 1]} {payslip.year}
 				</div>
@@ -315,10 +322,10 @@
 				</p>
 			</div>
 			<div class="text-right">
-				<div class="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800">
+				<Badge variant="secondary" class="gap-1.5 bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 text-xs font-semibold px-3 py-1">
 					<CheckCircle2 class="h-3.5 w-3.5 text-emerald-600" />
 					<span>Direct Bank Transfer</span>
-				</div>
+				</Badge>
 			</div>
 		</div>
 
@@ -342,7 +349,7 @@
 				<span class="text-[9px] text-muted-foreground">Dayflow Technologies Pvt Ltd</span>
 			</div>
 		</div>
-	</div>
+	</Card.Root>
 </div>
 
 <style>
