@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { EmployeeGridProps } from './types';
 	import type { Employee, EmployeeWithRelations } from '$lib/types/employee';
-	import EmployeeCard from './EmployeeCard.svelte';
+	import EmployeeCard from '$lib/components/employees/EmployeeCard.svelte';
 	import { Users, SearchX, UserX, Plus, Sparkles } from '@lucide/svelte';
 
 	let {

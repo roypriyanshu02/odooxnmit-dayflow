@@ -9,6 +9,8 @@ import type {
 	ChatterEntry
 } from './index';
 
+export type { AttendanceDisplayStatus };
+
 export type EmployeeStatus = 'active' | 'on_leave' | 'inactive';
 
 export const DEPARTMENTS = [
