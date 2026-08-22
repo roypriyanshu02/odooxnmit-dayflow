@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { Calendar, BarChart3, TrendingUp } from '@lucide/svelte';
+	import { BarChart3 } from '@lucide/svelte';
+	import * as Card from '$lib/components/ui/card';
 
 	interface DailyAttendanceData {
 		date: string;
@@ -23,14 +24,13 @@
 			{ date: '2026-08-21', dayLabel: 'Fri', presentCount: 12, onLeaveCount: 0, absentCount: 0 },
 			{ date: '2026-08-22', dayLabel: 'Sat', presentCount: 10, onLeaveCount: 2, absentCount: 0 },
 			{ date: '2026-08-23', dayLabel: 'Sun', presentCount: 0, onLeaveCount: 0, absentCount: 0 }
-		],
-		totalEmployees = 12
+		]
 	}: Props = $props();
 
 	const maxCapacity = 14;
 </script>
 
-<div class="rounded-2xl border border-border bg-card p-5 shadow-2xs">
+<Card.Root class="p-5 shadow-2xs">
 	<!-- Header -->
 	<div class="flex items-center justify-between pb-4 mb-4 border-b border-border/80">
 		<div class="flex items-center gap-2.5">
@@ -98,4 +98,4 @@
 			</div>
 		{/each}
 	</div>
-</div>
+</Card.Root>

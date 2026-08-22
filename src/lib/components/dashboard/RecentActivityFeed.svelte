@@ -4,11 +4,10 @@
 		CheckCircle2,
 		Plane,
 		Coins,
-		UserPlus,
-		MessageSquare,
-		Sparkles,
-		ArrowRight
+		Sparkles
 	} from '@lucide/svelte';
+	import * as Card from '$lib/components/ui/card';
+	import { Badge } from '$lib/components/ui/badge';
 
 	interface ActivityItem {
 		id: string;
@@ -61,7 +60,7 @@
 	}: Props = $props();
 </script>
 
-<div class="rounded-2xl border border-border bg-card p-5 shadow-2xs">
+<Card.Root class="p-5 shadow-2xs">
 	<!-- Header -->
 	<div class="flex items-center justify-between pb-4 mb-4 border-b border-border/80">
 		<div class="flex items-center gap-2.5">
@@ -74,9 +73,9 @@
 			</div>
 		</div>
 
-		<span class="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+		<Badge variant="outline" class="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 text-[10px] font-bold">
 			Live Stream
-		</span>
+		</Badge>
 	</div>
 
 	<!-- Activity Timeline -->
@@ -113,4 +112,4 @@
 			</div>
 		{/each}
 	</div>
-</div>
+</Card.Root>

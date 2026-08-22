@@ -1,5 +1,7 @@
 <script lang="ts">
-	import { Building2, Users } from '@lucide/svelte';
+	import { Building2 } from '@lucide/svelte';
+	import * as Card from '$lib/components/ui/card';
+	import { Progress } from '$lib/components/ui/progress';
 
 	interface DepartmentStat {
 		name: string;
@@ -26,7 +28,7 @@
 	}: Props = $props();
 </script>
 
-<div class="rounded-2xl border border-border bg-card p-5 shadow-2xs">
+<Card.Root class="p-5 shadow-2xs">
 	<!-- Header -->
 	<div class="flex items-center justify-between pb-4 mb-4 border-b border-border/80">
 		<div class="flex items-center gap-2.5">
@@ -57,13 +59,8 @@
 				</div>
 
 				<!-- Progress Bar -->
-				<div class="h-2 w-full rounded-full bg-muted/60 overflow-hidden">
-					<div
-						class="h-full rounded-full {dept.color} transition-all duration-500"
-						style="width: {dept.percentage}%;"
-					></div>
-				</div>
+				<Progress value={dept.percentage} class="h-2" />
 			</div>
 		{/each}
 	</div>
-</div>
+</Card.Root>
