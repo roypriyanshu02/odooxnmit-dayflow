@@ -1,0 +1,200 @@
+export type UserRole = 'admin' | 'hr' | 'employee';
+
+export interface User {
+	id: string;
+	email: string;
+	name: string;
+	role: UserRole;
+	createdAt: string;
+	updatedAt: string;
+}
+
+export type EmployeeStatus = 'active' | 'on_leave' | 'inactive';
+export type AttendanceDisplayStatus = 'present' | 'absent' | 'on_leave';
+
+export interface Certification {
+	name: string;
+	issuer: string;
+	year: number | string;
+}
+
+export interface WorkHistory {
+	company: string;
+	role: string;
+	duration: string;
+	description?: string;
+}
+
+export interface EmployeeAbout {
+	bio: string;
+	passions: string;
+	hobbies: string;
+}
+
+export interface EmployeeResume {
+	skills: string[];
+	certifications: Certification[];
+	workHistory: WorkHistory[];
+}
+
+export interface EmployeePrivateInfo {
+	panNumber: string;
+	uanNumber: string;
+	dob: string;
+	gender: 'male' | 'female' | 'other' | 'prefer_not_to_say';
+	maritalStatus: 'single' | 'married' | 'other';
+	address: string;
+	bankAccountNumber: string;
+	bankIfsc: string;
+	bankName: string;
+}
+
+export interface SalaryBreakdown {
+	monthlyWage: number;
+	basicSalary: number;
+	hra: number;
+	standardAllowance: number;
+	performanceBonus: number;
+	lta: number;
+	fixedAllowance: number;
+	grossSalary: number;
+	employeePf: number;
+	employerPf: number;
+	professionalTax: number;
+	totalDeductions: number;
+	netSalary: number;
+}
+
+export interface Employee {
+	id: string; // Dynamic ID format: OIJODO20250001
+	userId: string;
+	firstName: string;
+	lastName: string;
+	email: string;
+	phone: string;
+	jobTitle: string;
+	department: string;
+	managerId?: string | null;
+	avatarUrl?: string | null;
+	status: EmployeeStatus;
+	joinDate: string;
+	about: EmployeeAbout;
+	resume: EmployeeResume;
+	privateInfo: EmployeePrivateInfo;
+	monthlyWage: number;
+	createdAt: string;
+	updatedAt: string;
+}
+
+export type AttendanceStatus = 'present' | 'absent' | 'half_day' | 'on_leave';
+
+export interface AttendanceBreak {
+	id: string;
+	attendanceId: string;
+	employeeId: string;
+	startTime: string;
+	endTime?: string | null;
+	durationMinutes: number;
+	reason?: string | null;
+	createdAt: string;
+}
+
+export interface AttendanceRecord {
+	id: string;
+	employeeId: string;
+	date: string; // YYYY-MM-DD
+	checkIn?: string | null; // ISO timestamp
+	checkOut?: string | null; // ISO timestamp
+	totalWorkMinutes: number;
+	totalBreakMinutes: number;
+	overtimeMinutes: number;
+	status: AttendanceStatus;
+	breaks?: AttendanceBreak[];
+	createdAt: string;
+	updatedAt: string;
+}
+
+export type LeaveType = 'paid_time_off' | 'sick_leave' | 'unpaid_leave';
+export type LeaveStatus = 'pending' | 'approved' | 'rejected';
+
+export interface LeaveBalance {
+	id: string;
+	employeeId: string;
+	year: number;
+	paidTimeOffTotal: number;
+	paidTimeOffUsed: number;
+	sickLeaveTotal: number;
+	sickLeaveUsed: number;
+	unpaidLeaveUsed: number;
+	updatedAt: string;
+}
+
+export interface LeaveRequest {
+	id: string;
+	employeeId: string;
+	leaveType: LeaveType;
+	startDate: string; // YYYY-MM-DD
+	endDate: string; // YYYY-MM-DD
+	totalDays: number;
+	reason: string;
+	status: LeaveStatus;
+	approvedBy?: string | null;
+	rejectionReason?: string | null;
+	attachmentUrl?: string | null;
+	createdAt: string;
+	updatedAt: string;
+}
+
+export type PayslipStatus = 'draft' | 'processed' | 'paid';
+
+export interface Payslip {
+	id: string;
+	employeeId: string;
+	month: number;
+	year: number;
+	monthlyWage: number;
+	basicSalary: number;
+	hra: number;
+	standardAllowance: number;
+	performanceBonus: number;
+	lta: number;
+	fixedAllowance: number;
+	grossSalary: number;
+	employeePf: number;
+	employerPf: number;
+	professionalTax: number;
+	totalDeductions: number;
+	netSalary: number;
+	payableDays: number;
+	totalWorkingDays: number;
+	status: PayslipStatus;
+	paymentDate?: string | null;
+	createdAt: string;
+	updatedAt: string;
+}
+
+export type ChatterType = 'note' | 'status_change' | 'field_update';
+
+export interface ChatterEntry {
+	id: string;
+	entityType: 'employee' | 'leave' | 'payroll';
+	entityId: string;
+	authorId: string;
+	authorName: string;
+	authorAvatar?: string | null;
+	message: string;
+	type: ChatterType;
+	metadata?: Record<string, unknown> | null;
+	createdAt: string;
+}
+
+export interface HRAnalyticsSummary {
+	totalEmployees: number;
+	activeEmployees: number;
+	presentToday: number;
+	onLeaveToday: number;
+	absentToday: number;
+	pendingLeaveRequests: number;
+	monthlyPayrollCost: number;
+	departmentDistribution: Record<string, number>;
+}
