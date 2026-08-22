@@ -10,7 +10,6 @@ export interface User {
 }
 
 export type EmployeeStatus = 'active' | 'on_leave' | 'inactive';
-export type AttendanceDisplayStatus = 'present' | 'absent' | 'on_leave';
 
 export interface Certification {
 	name: string;
@@ -86,33 +85,7 @@ export interface Employee {
 	updatedAt: string;
 }
 
-export type AttendanceStatus = 'present' | 'absent' | 'half_day' | 'on_leave';
-
-export interface AttendanceBreak {
-	id: string;
-	attendanceId: string;
-	employeeId: string;
-	startTime: string;
-	endTime?: string | null;
-	durationMinutes: number;
-	reason?: string | null;
-	createdAt: string;
-}
-
-export interface AttendanceRecord {
-	id: string;
-	employeeId: string;
-	date: string; // YYYY-MM-DD
-	checkIn?: string | null; // ISO timestamp
-	checkOut?: string | null; // ISO timestamp
-	totalWorkMinutes: number;
-	totalBreakMinutes: number;
-	overtimeMinutes: number;
-	status: AttendanceStatus;
-	breaks?: AttendanceBreak[];
-	createdAt: string;
-	updatedAt: string;
-}
+export * from './attendance';
 
 export type LeaveType = 'paid_time_off' | 'sick_leave' | 'unpaid_leave';
 export type LeaveStatus = 'pending' | 'approved' | 'rejected';
