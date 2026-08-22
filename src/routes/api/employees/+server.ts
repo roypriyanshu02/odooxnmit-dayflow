@@ -48,7 +48,7 @@ export const GET: RequestHandler = async ({ url }) => {
 		}
 
 		// Map to EmployeeWithRelations
-		let mappedEmployees: EmployeeWithRelations[] = rawEmployees.map((raw) => {
+		let mappedEmployees: EmployeeWithRelations[] = rawEmployees.map((raw: typeof schema.employees.$inferSelect) => {
 			let skills: string[] = [];
 			try {
 				skills = Array.isArray(raw.skills)
@@ -216,14 +216,14 @@ export const GET: RequestHandler = async ({ url }) => {
 		});
 
 		// Collect unique department list for pills/dropdowns
-		const allDepartments = Array.from(new Set(rawEmployees.map((e) => e.department))).sort();
+		const allDepartments = Array.from(new Set<string>(rawEmployees.map((e: typeof schema.employees.$inferSelect) => e.department))).sort();
 
 		// Calculate statistics summary
 		const stats = {
 			total: rawEmployees.length,
-			active: rawEmployees.filter((e) => e.status === 'active').length,
-			present: mappedEmployees.filter((e) => e.attendanceStatus === 'present').length,
-			onLeave: rawEmployees.filter((e) => e.status === 'on_leave').length,
+			active: rawEmployees.filter((e: typeof schema.employees.$inferSelect) => e.status === 'active').length,
+			present: mappedEmployees.filter((e: EmployeeWithRelations) => e.attendanceStatus === 'present').length,
+			onLeave: rawEmployees.filter((e: typeof schema.employees.$inferSelect) => e.status === 'on_leave').length,
 			filteredCount: mappedEmployees.length
 		};
 

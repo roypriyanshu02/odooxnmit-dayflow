@@ -46,7 +46,7 @@
 			employees = data.initialEmployees;
 		}
 		if (data?.departments) {
-			departments = data.departments;
+			departments = data.departments as string[];
 		}
 		if (data?.stats) {
 			stats = data.stats;

@@ -43,11 +43,11 @@ export const load: PageServerLoad = async ({ url }) => {
 			leaveMap.set(leave.employeeId, leave);
 		}
 
-		let mappedEmployees: EmployeeWithRelations[] = rawEmployees.map((raw) => {
+		let mappedEmployees: EmployeeWithRelations[] = rawEmployees.map((raw: typeof schema.employees.$inferSelect) => {
 			let skills: string[] = [];
 			try {
 				skills = Array.isArray(raw.skills)
-					? raw.skills
+					? (raw.skills as string[])
 					: typeof raw.skills === 'string'
 						? JSON.parse(raw.skills || '[]')
 						: [];
@@ -133,13 +133,13 @@ export const load: PageServerLoad = async ({ url }) => {
 			};
 		});
 
-		const allDepartments = Array.from(new Set(rawEmployees.map((e) => e.department))).sort();
+		const allDepartments = Array.from(new Set<string>(rawEmployees.map((e: typeof schema.employees.$inferSelect) => e.department))).sort();
 
 		const stats = {
 			total: rawEmployees.length,
-			active: rawEmployees.filter((e) => e.status === 'active').length,
-			present: mappedEmployees.filter((e) => e.attendanceStatus === 'present').length,
-			onLeave: rawEmployees.filter((e) => e.status === 'on_leave').length
+			active: rawEmployees.filter((e: typeof schema.employees.$inferSelect) => e.status === 'active').length,
+			present: mappedEmployees.filter((e: EmployeeWithRelations) => e.attendanceStatus === 'present').length,
+			onLeave: rawEmployees.filter((e: typeof schema.employees.$inferSelect) => e.status === 'on_leave').length
 		};
 
 		return {
