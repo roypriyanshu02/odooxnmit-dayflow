@@ -23,6 +23,12 @@
 
 	let mobileMenuOpen = $state(false);
 
+	function handleKeydown(e: KeyboardEvent) {
+		if (e.key === 'Escape' && mobileMenuOpen) {
+			mobileMenuOpen = false;
+		}
+	}
+
 	// Systray attendance widget simulated state
 	let isCheckedIn = $state(true);
 	let elapsedMinutes = $state(264); // 4h 24m
@@ -60,7 +66,9 @@
 	}
 </script>
 
-<header class="sticky top-0 z-40 w-full border-b border-border/80 bg-card/90 backdrop-blur-md transition-all">
+<svelte:window onkeydown={handleKeydown} />
+
+<header class="sticky top-0 z-40 w-full border-b border-border bg-background/95 backdrop-blur-md supports-[backdrop-filter]:bg-background/60">
 	<div class="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
 		<!-- Left: Brand Logo & Navigation Links -->
 		<div class="flex items-center gap-6 md:gap-8">
