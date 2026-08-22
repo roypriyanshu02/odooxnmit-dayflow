@@ -37,7 +37,7 @@ export const load: PageServerLoad = async () => {
 
 		// Format existing requests or provide realistic defaults
 		const initialRequests: LeaveRequest[] = allRequests.length > 0
-			? allRequests.map((r) => ({
+			? allRequests.map((r: typeof leaveRequests.$inferSelect) => ({
 					id: r.id,
 					employeeId: r.employeeId,
 					leaveType: r.leaveType as LeaveType,
