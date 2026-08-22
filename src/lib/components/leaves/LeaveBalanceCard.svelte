@@ -9,6 +9,9 @@
 		Clock,
 		CheckCircle2
 	} from '@lucide/svelte';
+	import * as Card from '$lib/components/ui/card';
+	import { Badge } from '$lib/components/ui/badge';
+	import { Button } from '$lib/components/ui/button';
 
 	interface Props {
 		type: LeaveType;
@@ -68,8 +71,8 @@
 	const IconComponent = $derived(iconMap[type] || Palmtree);
 </script>
 
-<div
-	class="group relative overflow-hidden rounded-2xl border border-border/80 bg-card p-5 shadow-xs transition-all duration-300 hover:shadow-md hover:border-border hover:-translate-y-0.5 {className}"
+<Card.Root
+	class="group relative overflow-hidden p-5 shadow-xs transition-all duration-300 hover:shadow-md hover:border-border hover:-translate-y-0.5 {className}"
 >
 	<!-- Subtle ambient background glow -->
 	<div
@@ -97,25 +100,28 @@
 
 		<!-- Status Badge -->
 		{#if type === 'unpaid_leave'}
-			<span
-				class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold {config.color.badgeBg} {config.color.badgeText}"
+			<Badge
+				variant="secondary"
+				class="gap-1 text-[11px] font-semibold {config.color.badgeBg} {config.color.badgeText}"
 			>
 				<Clock class="h-3 w-3" />
 				Loss of Pay
-			</span>
+			</Badge>
 		{:else if remaining > 0}
-			<span
-				class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"
+			<Badge
+				variant="secondary"
+				class="gap-1 text-[11px] font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"
 			>
 				<CheckCircle2 class="h-3 w-3" />
 				Available
-			</span>
+			</Badge>
 		{:else}
-			<span
-				class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300"
+			<Badge
+				variant="secondary"
+				class="gap-1 text-[11px] font-semibold bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300"
 			>
 				Exhausted
-			</span>
+			</Badge>
 		{/if}
 	</div>
 
@@ -197,14 +203,15 @@
 	<!-- Bottom Action / CTA Button -->
 	{#if onApply}
 		<div class="mt-4 pt-2">
-			<button
-				type="button"
+			<Button
+				variant="outline"
+				size="sm"
 				onclick={() => onApply?.(type)}
-				class="w-full flex items-center justify-center gap-1.5 rounded-xl border border-border/80 bg-muted/30 py-2 text-xs font-semibold text-foreground transition-colors hover:bg-primary hover:text-primary-foreground hover:border-primary focus:outline-hidden focus:ring-2 focus:ring-ring"
+				class="w-full gap-1.5 bg-muted/30 hover:bg-primary hover:text-primary-foreground hover:border-primary text-xs font-semibold"
 			>
 				<span>Request {config.shortName}</span>
-				<ArrowUpRight class="h-3.5 w-3.5 transition-transform group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5" />
-			</button>
+				<ArrowUpRight class="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+			</Button>
 		</div>
 	{/if}
-</div>
+</Card.Root>

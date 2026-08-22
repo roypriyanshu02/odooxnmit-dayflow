@@ -6,13 +6,9 @@
 		Clock,
 		CheckCircle2,
 		XCircle,
-		AlertCircle,
 		Search,
 		Filter,
-		ChevronRight,
-		Info,
 		UserCheck,
-		FileText,
 		Sparkles,
 		X,
 		RotateCcw,
@@ -20,13 +16,19 @@
 		ShieldAlert,
 		Briefcase
 	} from '@lucide/svelte';
+	import * as Table from '$lib/components/ui/table';
+	import { Badge } from '$lib/components/ui/badge';
+	import { Button } from '$lib/components/ui/button';
+	import { Input } from '$lib/components/ui/input';
+	import * as Dialog from '$lib/components/ui/dialog';
+	import * as Avatar from '$lib/components/ui/avatar';
 
 	export interface LeaveHistoryItem {
 		id: string;
 		employeeId: string;
 		leaveType: LeaveType;
-		startDate: string; // YYYY-MM-DD
-		endDate: string; // YYYY-MM-DD
+		startDate: string;
+		endDate: string;
 		totalDays: number;
 		businessDays?: number;
 		reason: string;
@@ -150,27 +152,20 @@
 	}
 
 	// Filtered leaves derived computation
-	const filteredLeaves = $derived(() => {
+	const filteredLeaves = $derived.by(() => {
 		return leaves.filter((item) => {
-			// Status Filter
 			if (statusFilter !== 'all' && item.status !== statusFilter) {
 				return false;
 			}
-
-			// Type Filter
 			if (typeFilter !== 'all' && item.leaveType !== typeFilter) {
 				return false;
 			}
-
-			// Year Filter
 			if (yearFilter && yearFilter !== 'all') {
 				const yr = String(yearFilter);
 				const startsInYear = item.startDate.startsWith(yr);
 				const endsInYear = item.endDate.startsWith(yr);
 				if (!startsInYear && !endsInYear) return false;
 			}
-
-			// Search Filter (reason, employee name, approver name)
 			if (searchFilter.trim() !== '') {
 				const query = searchFilter.toLowerCase().trim();
 				const matchReason = item.reason?.toLowerCase().includes(query);
@@ -184,13 +179,12 @@
 					return false;
 				}
 			}
-
 			return true;
 		});
 	});
 
 	// Status counts for badge tabs
-	const statusCounts = $derived(() => {
+	const statusCounts = $derived.by(() => {
 		const counts = { all: leaves.length, pending: 0, approved: 0, rejected: 0 };
 		for (const l of leaves) {
 			if (l.status in counts) {
@@ -223,7 +217,7 @@
 		<!-- Status Tabs -->
 		<div class="flex flex-wrap items-center gap-1.5 rounded-xl bg-muted/60 p-1 border border-border/80">
 			{#each statusTabs as tab (tab.id)}
-				{@const count = statusCounts()[tab.id as keyof ReturnType<typeof statusCounts>]}
+				{@const count = statusCounts[tab.id as keyof typeof statusCounts]}
 				{@const active = statusFilter === tab.id}
 				<button
 					type="button"
@@ -233,8 +227,9 @@
 						: 'text-muted-foreground hover:bg-card/50 hover:text-foreground'}"
 				>
 					<span>{tab.label}</span>
-					<span
-						class="rounded-full px-1.5 py-0.2 text-[10px] font-bold transition-colors {active
+					<Badge
+						variant="secondary"
+						class="px-1.5 py-0 text-[10px] font-bold {active
 							? tab.id === 'pending'
 								? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
 								: tab.id === 'approved'
@@ -245,7 +240,7 @@
 							: 'bg-muted text-muted-foreground'}"
 					>
 						{count}
-					</span>
+					</Badge>
 				</button>
 			{/each}
 		</div>
@@ -255,20 +250,21 @@
 			<!-- Search Bar -->
 			<div class="relative min-w-[200px] flex-1 sm:flex-initial">
 				<Search class="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-				<input
+				<Input
 					type="text"
 					bind:value={searchFilter}
 					placeholder="Search reason or tags..."
-					class="h-8.5 w-full rounded-lg border border-border/80 bg-card pl-8 pr-3 text-xs text-foreground placeholder:text-muted-foreground transition-all focus:border-primary focus:outline-hidden focus:ring-2 focus:ring-primary/20"
+					class="h-8.5 pl-8 pr-7 text-xs"
 				/>
 				{#if searchFilter}
-					<button
-						type="button"
+					<Button
+						variant="ghost"
+						size="icon"
 						onclick={() => (searchFilter = '')}
-						class="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+						class="absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6 text-muted-foreground hover:text-foreground"
 					>
 						<X class="h-3 w-3" />
-					</button>
+					</Button>
 				{/if}
 			</div>
 
@@ -301,15 +297,16 @@
 			</div>
 
 			{#if statusFilter !== 'all' || typeFilter !== 'all' || searchFilter !== '' || yearFilter !== 2026}
-				<button
-					type="button"
+				<Button
+					variant="outline"
+					size="sm"
 					onclick={resetFilters}
-					class="flex h-8.5 items-center gap-1 rounded-lg border border-border bg-card px-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+					class="h-8.5 gap-1 text-xs text-muted-foreground"
 					title="Reset all filters"
 				>
 					<RotateCcw class="h-3 w-3" />
 					<span class="hidden sm:inline">Reset</span>
-				</button>
+				</Button>
 			{/if}
 		</div>
 	</div>
@@ -339,7 +336,7 @@
 					</div>
 				{/each}
 			</div>
-		{:else if filteredLeaves().length === 0}
+		{:else if filteredLeaves.length === 0}
 			<!-- Empty State -->
 			<div class="flex flex-col items-center justify-center px-4 py-12 text-center">
 				<div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted/60 text-muted-foreground ring-8 ring-muted/20">
@@ -353,69 +350,64 @@
 				</p>
 				<div class="mt-5 flex items-center gap-2">
 					{#if searchFilter || statusFilter !== 'all' || typeFilter !== 'all' || yearFilter !== 2026}
-						<button
-							type="button"
+						<Button
+							variant="outline"
+							size="sm"
 							onclick={resetFilters}
-							class="rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-muted"
 						>
 							Clear Filters
-						</button>
+						</Button>
 					{/if}
 					{#if onRequestLeave}
-						<button
-							type="button"
+						<Button
+							size="sm"
 							onclick={onRequestLeave}
-							class="flex items-center gap-1.5 rounded-lg bg-primary px-3.5 py-1.5 text-xs font-semibold text-primary-foreground shadow-2xs hover:bg-primary/90"
+							class="gap-1.5"
 						>
 							<Sparkles class="h-3.5 w-3.5" />
 							<span>Apply for Leave</span>
-						</button>
+						</Button>
 					{/if}
 				</div>
 			</div>
 		{:else}
-			<!-- Desktop Viewport: Tabular Data Grid (hidden on xs screens) -->
+			<!-- Desktop Viewport: Tabular Data Grid -->
 			<div class="hidden md:block overflow-x-auto">
-				<table class="w-full text-left text-xs">
-					<thead class="border-b border-border/70 bg-muted/40 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-						<tr>
+				<Table.Root>
+					<Table.Header>
+						<Table.Row class="bg-muted/40">
 							{#if showEmployeeColumn}
-								<th class="px-4 py-3">Employee</th>
+								<Table.Head class="text-xs">Employee</Table.Head>
 							{/if}
-							<th class="px-4 py-3">Leave Type</th>
-							<th class="px-4 py-3">Duration & Dates</th>
-							<th class="px-4 py-3">Business Days</th>
-							<th class="px-4 py-3">Status</th>
-							<th class="px-4 py-3">Reason / Details</th>
-							<th class="px-4 py-3 text-right">Approver / Decision</th>
-						</tr>
-					</thead>
-					<tbody class="divide-y divide-border/60">
-						{#each filteredLeaves() as leave (leave.id)}
+							<Table.Head class="text-xs">Leave Type</Table.Head>
+							<Table.Head class="text-xs">Duration & Dates</Table.Head>
+							<Table.Head class="text-xs">Business Days</Table.Head>
+							<Table.Head class="text-xs">Status</Table.Head>
+							<Table.Head class="text-xs">Reason / Details</Table.Head>
+							<Table.Head class="text-xs text-right">Approver / Decision</Table.Head>
+						</Table.Row>
+					</Table.Header>
+					<Table.Body>
+						{#each filteredLeaves as leave (leave.id)}
 							{@const bDays = getBusinessDays(leave)}
-							<tr
-								class="group transition-colors hover:bg-muted/40 cursor-pointer"
+							<Table.Row
+								class="cursor-pointer"
 								onclick={() => onLeaveSelect?.(leave)}
 							>
-								<!-- Employee Column (Conditional for HR/Admin) -->
+								<!-- Employee Column -->
 								{#if showEmployeeColumn}
-									<td class="px-4 py-3">
+									<Table.Cell>
 										<div class="flex items-center gap-2.5">
-											<div class="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary font-bold text-[10px]">
+											<Avatar.Root class="h-7 w-7">
 												{#if leave.employee?.avatarUrl}
-													<img
-														src={leave.employee.avatarUrl}
-														alt={leave.employee.firstName}
-														class="h-7 w-7 rounded-full object-cover"
-													/>
-												{:else if leave.employee}
-													{leave.employee.firstName[0]}{leave.employee.lastName[0]}
-												{:else}
-													EMP
+													<Avatar.Image src={leave.employee.avatarUrl} alt={leave.employee.firstName} />
 												{/if}
-											</div>
+												<Avatar.Fallback class="bg-primary/10 text-primary font-bold text-[10px]">
+													{leave.employee ? `${leave.employee.firstName[0]}${leave.employee.lastName[0]}` : 'EMP'}
+												</Avatar.Fallback>
+											</Avatar.Root>
 											<div class="flex flex-col">
-												<span class="font-semibold text-foreground">
+												<span class="font-semibold text-foreground text-xs">
 													{leave.employee ? `${leave.employee.firstName} ${leave.employee.lastName}` : leave.employeeId}
 												</span>
 												<span class="text-[10px] text-muted-foreground">
@@ -423,82 +415,82 @@
 												</span>
 											</div>
 										</div>
-									</td>
+									</Table.Cell>
 								{/if}
 
 								<!-- Leave Type Tag -->
-								<td class="px-4 py-3 whitespace-nowrap">
+								<Table.Cell class="whitespace-nowrap">
 									<div class="flex items-center gap-2">
 										{#if leave.leaveType === 'paid_time_off'}
-											<span class="inline-flex items-center gap-1.5 rounded-md bg-indigo-50 px-2 py-1 text-[11px] font-semibold text-indigo-700 ring-1 ring-inset ring-indigo-700/10 dark:bg-indigo-950/50 dark:text-indigo-300 dark:ring-indigo-800/30">
+											<Badge variant="secondary" class="gap-1.5 bg-indigo-50 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300">
 												<CalendarRange class="h-3 w-3 text-indigo-500" />
 												<span>Paid Time Off (PTO)</span>
-											</span>
+											</Badge>
 										{:else if leave.leaveType === 'sick_leave'}
-											<span class="inline-flex items-center gap-1.5 rounded-md bg-amber-50 px-2 py-1 text-[11px] font-semibold text-amber-700 ring-1 ring-inset ring-amber-700/10 dark:bg-amber-950/50 dark:text-amber-300 dark:ring-amber-800/30">
+											<Badge variant="secondary" class="gap-1.5 bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300">
 												<Briefcase class="h-3 w-3 text-amber-500" />
 												<span>Sick Leave</span>
-											</span>
+											</Badge>
 										{:else}
-											<span class="inline-flex items-center gap-1.5 rounded-md bg-slate-100 px-2 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-inset ring-slate-600/10 dark:bg-slate-900 dark:text-slate-300 dark:ring-slate-800">
+											<Badge variant="secondary" class="gap-1.5 bg-slate-100 text-slate-700 dark:bg-slate-900 dark:text-slate-300">
 												<Clock class="h-3 w-3 text-slate-500" />
 												<span>Unpaid Leave</span>
-											</span>
+											</Badge>
 										{/if}
 									</div>
-								</td>
+								</Table.Cell>
 
 								<!-- Dates Range -->
-								<td class="px-4 py-3 whitespace-nowrap">
+								<Table.Cell class="whitespace-nowrap">
 									<div class="flex flex-col">
-										<span class="font-medium text-foreground">
+										<span class="font-medium text-foreground text-xs">
 											{formatShortDate(leave.startDate)} &rarr; {formatDate(leave.endDate)}
 										</span>
 										<span class="text-[10px] text-muted-foreground">
 											Applied {formatShortDate(leave.createdAt)}
 										</span>
 									</div>
-								</td>
+								</Table.Cell>
 
 								<!-- Working Days Count -->
-								<td class="px-4 py-3 whitespace-nowrap">
+								<Table.Cell class="whitespace-nowrap">
 									<div class="flex items-center gap-1.5">
-										<span class="font-bold text-foreground">{leave.totalDays}</span>
+										<span class="font-bold text-foreground text-xs">{leave.totalDays}</span>
 										<span class="text-[10px] font-medium text-muted-foreground">
 											({bDays} {bDays === 1 ? 'biz day' : 'biz days'})
 										</span>
 									</div>
-								</td>
+								</Table.Cell>
 
 								<!-- Status Badge -->
-								<td class="px-4 py-3 whitespace-nowrap">
+								<Table.Cell class="whitespace-nowrap">
 									{#if leave.status === 'approved'}
-										<span class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-600/20 dark:bg-emerald-950/50 dark:text-emerald-300 dark:ring-emerald-800">
+										<Badge variant="secondary" class="gap-1 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 font-semibold">
 											<CheckCircle2 class="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
 											<span>Approved</span>
-										</span>
+										</Badge>
 									{:else if leave.status === 'pending'}
-										<span class="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-0.5 text-[11px] font-semibold text-amber-700 ring-1 ring-inset ring-amber-600/20 dark:bg-amber-950/50 dark:text-amber-300 dark:ring-amber-800 animate-pulse">
+										<Badge variant="secondary" class="gap-1 bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300 font-semibold animate-pulse">
 											<Clock class="h-3 w-3 text-amber-600 dark:text-amber-400" />
 											<span>Pending</span>
-										</span>
+										</Badge>
 									{:else}
-										<span class="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2.5 py-0.5 text-[11px] font-semibold text-rose-700 ring-1 ring-inset ring-rose-600/20 dark:bg-rose-950/50 dark:text-rose-300 dark:ring-rose-800">
+										<Badge variant="secondary" class="gap-1 bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300 font-semibold">
 											<XCircle class="h-3 w-3 text-rose-600 dark:text-rose-400" />
 											<span>Rejected</span>
-										</span>
+										</Badge>
 									{/if}
-								</td>
+								</Table.Cell>
 
-								<!-- Reason / Notes -->
-								<td class="px-4 py-3 max-w-xs">
-									<div class="line-clamp-2 text-foreground font-normal" title={leave.reason}>
+								<!-- Reason / Details -->
+								<Table.Cell class="max-w-xs">
+									<div class="line-clamp-2 text-foreground font-normal text-xs" title={leave.reason}>
 										{leave.reason}
 									</div>
-								</td>
+								</Table.Cell>
 
 								<!-- Approver Info / Rejection Details -->
-								<td class="px-4 py-3 text-right whitespace-nowrap">
+								<Table.Cell class="text-right whitespace-nowrap">
 									{#if leave.status === 'approved'}
 										<div class="flex items-center justify-end gap-1.5 text-xs text-muted-foreground">
 											<UserCheck class="h-3.5 w-3.5 text-emerald-600" />
@@ -507,30 +499,31 @@
 											</span>
 										</div>
 									{:else if leave.status === 'rejected'}
-										<button
-											type="button"
+										<Button
+											variant="ghost"
+											size="xs"
 											onclick={(e) => openNotesModal(leave, e)}
-											class="inline-flex items-center gap-1 rounded-md bg-rose-50 px-2 py-1 text-[10px] font-semibold text-rose-700 hover:bg-rose-100 dark:bg-rose-950/60 dark:text-rose-300 dark:hover:bg-rose-900 transition-colors"
+											class="gap-1 text-[10px] font-semibold text-rose-700 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/60 dark:text-rose-300 dark:hover:bg-rose-900"
 											title="Click to view rejection reason"
 										>
 											<ShieldAlert class="h-3 w-3 text-rose-600" />
 											<span>Rejection Note</span>
-										</button>
+										</Button>
 									{:else}
 										<span class="text-[11px] font-normal text-muted-foreground italic">
 											Pending HR Review
 										</span>
 									{/if}
-								</td>
-							</tr>
+								</Table.Cell>
+							</Table.Row>
 						{/each}
-					</tbody>
-				</table>
+					</Table.Body>
+				</Table.Root>
 			</div>
 
-			<!-- Mobile Viewport: Responsive Card Stream (visible on < md screens) -->
+			<!-- Mobile Viewport: Responsive Card Stream -->
 			<div class="divide-y divide-border/60 md:hidden">
-				{#each filteredLeaves() as leave (leave.id)}
+				{#each filteredLeaves as leave (leave.id)}
 					{@const bDays = getBusinessDays(leave)}
 					<div
 						class="p-4 space-y-3 transition-colors hover:bg-muted/30 cursor-pointer"
@@ -542,32 +535,32 @@
 						<div class="flex items-center justify-between gap-2">
 							<!-- Type Badge -->
 							{#if leave.leaveType === 'paid_time_off'}
-								<span class="inline-flex items-center gap-1 rounded-md bg-indigo-50 px-2 py-0.5 text-[10px] font-semibold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
+								<Badge variant="secondary" class="gap-1 bg-indigo-50 text-[10px] text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
 									<CalendarRange class="h-3 w-3" /> Paid Time Off
-								</span>
+								</Badge>
 							{:else if leave.leaveType === 'sick_leave'}
-								<span class="inline-flex items-center gap-1 rounded-md bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700 dark:bg-amber-950 dark:text-amber-300">
+								<Badge variant="secondary" class="gap-1 bg-amber-50 text-[10px] text-amber-700 dark:bg-amber-950 dark:text-amber-300">
 									<Briefcase class="h-3 w-3" /> Sick Leave
-								</span>
+								</Badge>
 							{:else}
-								<span class="inline-flex items-center gap-1 rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-700 dark:bg-slate-900 dark:text-slate-300">
+								<Badge variant="secondary" class="gap-1 bg-slate-100 text-[10px] text-slate-700 dark:bg-slate-900 dark:text-slate-300">
 									<Clock class="h-3 w-3" /> Unpaid Leave
-								</span>
+								</Badge>
 							{/if}
 
 							<!-- Status Badge -->
 							{#if leave.status === 'approved'}
-								<span class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 ring-1 ring-emerald-600/20 dark:bg-emerald-950/50 dark:text-emerald-300">
+								<Badge variant="secondary" class="gap-1 bg-emerald-50 text-[10px] font-semibold text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300">
 									<CheckCircle2 class="h-2.5 w-2.5" /> Approved
-								</span>
+								</Badge>
 							{:else if leave.status === 'pending'}
-								<span class="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700 ring-1 ring-amber-600/20 dark:bg-amber-950/50 dark:text-amber-300">
+								<Badge variant="secondary" class="gap-1 bg-amber-50 text-[10px] font-semibold text-amber-700 dark:bg-amber-950/50 dark:text-amber-300">
 									<Clock class="h-2.5 w-2.5" /> Pending
-								</span>
+								</Badge>
 							{:else}
-								<span class="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2 py-0.5 text-[10px] font-semibold text-rose-700 ring-1 ring-rose-600/20 dark:bg-rose-950/50 dark:text-rose-300">
+								<Badge variant="secondary" class="gap-1 bg-rose-50 text-[10px] font-semibold text-rose-700 dark:bg-rose-950/50 dark:text-rose-300">
 									<XCircle class="h-2.5 w-2.5" /> Rejected
-								</span>
+								</Badge>
 							{/if}
 						</div>
 
@@ -609,7 +602,7 @@
 		<!-- Table Footer Information Summary -->
 		<div class="flex items-center justify-between border-t border-border/80 bg-muted/20 px-4 py-2.5 text-xs text-muted-foreground">
 			<span>
-				Showing <strong class="font-semibold text-foreground">{filteredLeaves().length}</strong> of{' '}
+				Showing <strong class="font-semibold text-foreground">{filteredLeaves.length}</strong> of{' '}
 				<strong class="font-semibold text-foreground">{leaves.length}</strong> applications
 			</span>
 			<span class="text-[11px]">
@@ -619,46 +612,23 @@
 	</div>
 </div>
 
-<!-- Rejection Reason & Approver Detail Modal Popover -->
-{#if activeNoteLeave}
-	<div
-		class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs animate-in fade-in-0 duration-150"
-		role="presentation"
-		onclick={closeNotesModal}
-		onkeydown={(e) => e.key === 'Escape' && closeNotesModal()}
-	>
-		<div
-			class="w-full max-w-md rounded-xl border border-border bg-card p-5 shadow-xl animate-in zoom-in-95 duration-150"
-			role="dialog"
-			aria-modal="true"
-			aria-labelledby="modal-title"
-			tabindex="-1"
-			onclick={(e) => e.stopPropagation()}
-			onkeydown={(e) => e.stopPropagation()}
-		>
-			<div class="flex items-center justify-between border-b border-border pb-3">
-				<div class="flex items-center gap-2">
-					<div class="flex h-8 w-8 items-center justify-center rounded-lg bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300">
-						<ShieldAlert class="h-4 w-4" />
-					</div>
-					<div>
-						<h4 id="modal-title" class="text-sm font-semibold text-foreground">Leave Application Decision</h4>
-						<p class="text-[11px] text-muted-foreground">
-							{formatDate(activeNoteLeave.startDate)} to {formatDate(activeNoteLeave.endDate)}
-						</p>
-					</div>
+<!-- Rejection Reason Dialog -->
+<Dialog.Root open={!!activeNoteLeave} onOpenChange={(open) => { if (!open) closeNotesModal(); }}>
+	{#if activeNoteLeave}
+		<Dialog.Content class="sm:max-w-md">
+			<Dialog.Header class="flex flex-row items-center gap-2 space-y-0 pb-2">
+				<div class="flex h-8 w-8 items-center justify-center rounded-lg bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300">
+					<ShieldAlert class="h-4 w-4" />
 				</div>
-				<button
-					type="button"
-					onclick={closeNotesModal}
-					class="rounded-lg p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
-					aria-label="Close dialog"
-				>
-					<X class="h-4 w-4" />
-				</button>
-			</div>
+				<div>
+					<Dialog.Title class="text-sm font-semibold text-foreground">Leave Application Decision</Dialog.Title>
+					<Dialog.Description class="text-[11px] text-muted-foreground">
+						{formatDate(activeNoteLeave.startDate)} to {formatDate(activeNoteLeave.endDate)}
+					</Dialog.Description>
+				</div>
+			</Dialog.Header>
 
-			<div class="space-y-3 py-4 text-xs">
+			<div class="space-y-3 py-2 text-xs">
 				<div>
 					<span class="font-medium text-muted-foreground">Employee Reason:</span>
 					<p class="mt-1 rounded-lg bg-muted/40 p-2.5 text-foreground font-normal">
@@ -685,15 +655,15 @@
 				{/if}
 			</div>
 
-			<div class="flex justify-end pt-2">
-				<button
-					type="button"
+			<Dialog.Footer class="pt-2">
+				<Button
+					size="sm"
+					variant="secondary"
 					onclick={closeNotesModal}
-					class="rounded-lg bg-secondary px-3.5 py-1.5 text-xs font-semibold text-secondary-foreground hover:bg-secondary/80"
 				>
 					Close
-				</button>
-			</div>
-		</div>
-	</div>
-{/if}
+				</Button>
+			</Dialog.Footer>
+		</Dialog.Content>
+	{/if}
+</Dialog.Root>

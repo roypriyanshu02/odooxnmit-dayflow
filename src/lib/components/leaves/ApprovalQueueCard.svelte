@@ -11,9 +11,7 @@
 		AlertCircle,
 		Paperclip,
 		FileText,
-		Building2,
 		Briefcase,
-		ShieldCheck,
 		AlertTriangle,
 		Check,
 		X,
@@ -21,6 +19,12 @@
 		ExternalLink,
 		MessageSquare
 	} from '@lucide/svelte';
+	import * as Card from '$lib/components/ui/card';
+	import * as Avatar from '$lib/components/ui/avatar';
+	import { Badge } from '$lib/components/ui/badge';
+	import { Button } from '$lib/components/ui/button';
+	import * as Dialog from '$lib/components/ui/dialog';
+	import { Label } from '$lib/components/ui/label';
 
 	interface Props {
 		request: (LeaveRequestWithEmployee | LeaveApprovalQueueItem | any);
@@ -44,7 +48,6 @@
 	let rejectionError = $state('');
 	let approvedSuccess = $state(false);
 	let rejectedSuccess = $state(false);
-	let imgError = $state(false);
 	let showAttachmentModal = $state(false);
 
 	// Derived Employee & Request Details
@@ -247,8 +250,8 @@
 	);
 </script>
 
-<div
-	class="group relative flex flex-col justify-between rounded-2xl border border-border/80 bg-card p-5 sm:p-6 shadow-xs transition-all duration-200 hover:shadow-md hover:border-border {className}"
+<Card.Root
+	class="group relative flex flex-col justify-between p-5 sm:p-6 shadow-xs transition-all duration-200 hover:shadow-md hover:border-border {className}"
 >
 	<!-- Top Section: Header with Employee Info & Status Badge -->
 	<div>
@@ -256,13 +259,14 @@
 		<div class="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-border/60">
 			<div class="flex items-center gap-2 flex-wrap">
 				<!-- Request ID -->
-				<span class="font-mono text-xs font-bold text-foreground bg-muted/70 px-2 py-0.5 rounded-md border border-border/60">
+				<Badge variant="outline" class="font-mono text-xs font-bold">
 					{request.id}
-				</span>
+				</Badge>
 
 				<!-- Leave Type Badge -->
-				<span
-					class="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold {typeConfig.color.badgeBg} {typeConfig.color.badgeText}"
+				<Badge
+					variant="secondary"
+					class="gap-1 text-xs font-semibold {typeConfig.color.badgeBg} {typeConfig.color.badgeText}"
 				>
 					{#if leaveType === 'paid_time_off'}
 						<Palmtree class="h-3.5 w-3.5" />
@@ -272,7 +276,7 @@
 						<AlertCircle class="h-3.5 w-3.5" />
 					{/if}
 					{typeConfig.label}
-				</span>
+				</Badge>
 
 				<!-- Department Pill -->
 				<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border {deptTheme.bg} {deptTheme.text} {deptTheme.border}">
@@ -284,20 +288,20 @@
 			<!-- Status Indicator Badge -->
 			<div>
 				{#if currentStatus === 'approved'}
-					<span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 text-xs font-bold text-emerald-600 dark:text-emerald-400">
+					<Badge variant="secondary" class="gap-1.5 bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-bold">
 						<CheckCircle2 class="h-3.5 w-3.5" />
 						Approved
-					</span>
+					</Badge>
 				{:else if currentStatus === 'rejected'}
-					<span class="inline-flex items-center gap-1.5 rounded-full bg-rose-500/10 border border-rose-500/20 px-3 py-1 text-xs font-bold text-rose-600 dark:text-rose-400">
+					<Badge variant="secondary" class="gap-1.5 bg-rose-500/10 border-rose-500/20 text-rose-600 dark:text-rose-400 font-bold">
 						<XCircle class="h-3.5 w-3.5" />
 						Rejected
-					</span>
+					</Badge>
 				{:else}
-					<span class="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 px-3 py-1 text-xs font-bold text-amber-700 dark:text-amber-300">
+					<Badge variant="secondary" class="gap-1.5 bg-amber-500/10 border-amber-500/20 text-amber-700 dark:text-amber-300 font-bold">
 						<Clock class="h-3.5 w-3.5 animate-pulse" />
 						Pending HR Approval
-					</span>
+					</Badge>
 				{/if}
 			</div>
 		</div>
@@ -305,20 +309,14 @@
 		<!-- Middle Section: Employee Identity & Submission Timestamp -->
 		<div class="mt-4 flex items-start gap-4">
 			<!-- Avatar with Initials Fallback -->
-			<div class="relative shrink-0">
-				{#if employeeAvatar && !imgError}
-					<img
-						src={employeeAvatar}
-						alt={employeeName}
-						class="h-12 w-12 rounded-2xl object-cover border border-border/80 shadow-2xs group-hover:scale-105 transition-transform duration-200"
-						onerror={() => (imgError = true)}
-					/>
-				{:else}
-					<div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500/20 via-purple-500/20 to-pink-500/20 text-indigo-700 dark:text-indigo-300 font-extrabold text-sm border border-indigo-200/50 shadow-2xs">
-						{initials}
-					</div>
+			<Avatar.Root class="h-12 w-12 rounded-2xl border border-border/80 shadow-2xs">
+				{#if employeeAvatar}
+					<Avatar.Image src={employeeAvatar} alt={employeeName} class="object-cover" />
 				{/if}
-			</div>
+				<Avatar.Fallback class="rounded-2xl bg-gradient-to-br from-indigo-500/20 via-purple-500/20 to-pink-500/20 text-indigo-700 dark:text-indigo-300 font-extrabold text-sm border border-indigo-200/50">
+					{initials}
+				</Avatar.Fallback>
+			</Avatar.Root>
 
 			<!-- Name, Job Title & ID Details -->
 			<div class="min-w-0 flex-1">
@@ -327,9 +325,9 @@
 						{employeeName}
 					</h3>
 					{#if employeeId}
-						<span class="font-mono text-[11px] text-muted-foreground bg-muted/50 px-1.5 py-0.2 rounded border border-border/40">
+						<Badge variant="outline" class="font-mono text-[11px] font-normal">
 							{employeeId}
-						</span>
+						</Badge>
 					{/if}
 				</div>
 
@@ -426,14 +424,15 @@
 					</div>
 				</div>
 
-				<button
-					type="button"
+				<Button
+					variant="link"
+					size="xs"
 					onclick={() => (showAttachmentModal = true)}
-					class="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline hover:text-primary/80 transition-colors shrink-0 ml-2"
+					class="gap-1 text-xs font-semibold text-primary shrink-0 ml-2"
 				>
 					<span>Preview</span>
 					<ExternalLink class="h-3 w-3" />
-				</button>
+				</Button>
 			</div>
 		{/if}
 
@@ -461,22 +460,23 @@
 	{#if currentStatus === 'pending'}
 		<div class="mt-5 pt-4 border-t border-border/60 flex items-center justify-end gap-2.5">
 			<!-- Reject Button -->
-			<button
-				type="button"
+			<Button
+				variant="outline"
+				size="sm"
 				onclick={openRejectModal}
 				disabled={isApproving || isRejecting}
-				class="inline-flex items-center justify-center gap-1.5 rounded-xl border border-rose-500/30 bg-rose-50/50 dark:bg-rose-950/30 px-4 py-2 text-xs font-bold text-rose-700 dark:text-rose-300 hover:bg-rose-100 dark:hover:bg-rose-900/40 hover:border-rose-500/50 transition-colors disabled:opacity-50 shadow-2xs"
+				class="gap-1.5 border-rose-500/30 bg-rose-50/50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-300 hover:bg-rose-100 dark:hover:bg-rose-900/40 hover:border-rose-500/50 font-bold"
 			>
 				<X class="h-3.5 w-3.5" />
 				<span>Reject</span>
-			</button>
+			</Button>
 
 			<!-- Approve Button with Inline Loading/Success State -->
-			<button
-				type="button"
+			<Button
+				size="sm"
 				onclick={handleApprove}
 				disabled={isApproving || isRejecting}
-				class="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 dark:bg-emerald-500 px-5 py-2 text-xs font-bold text-white shadow-sm hover:bg-emerald-700 dark:hover:bg-emerald-600 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
+				class="gap-2 bg-emerald-600 dark:bg-emerald-500 hover:bg-emerald-700 dark:hover:bg-emerald-600 text-white font-bold"
 			>
 				{#if isApproving}
 					<Loader2 class="h-3.5 w-3.5 animate-spin" />
@@ -485,137 +485,107 @@
 					<Check class="h-3.5 w-3.5" />
 					<span>Approve Leave</span>
 				{/if}
-			</button>
+			</Button>
 		</div>
 	{/if}
-</div>
+</Card.Root>
 
-<!-- Rejection Reason Modal -->
-{#if isRejectModalOpen}
-	<div
-		class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs animate-in fade-in duration-200"
-		role="dialog"
-		aria-modal="true"
-		aria-labelledby="reject-dialog-title"
-	>
-		<div
-			class="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-2xl animate-in zoom-in-95 duration-200"
-		>
-			<div class="flex items-start justify-between gap-3 mb-4">
-				<div class="flex items-center gap-2.5">
-					<div class="flex h-9 w-9 items-center justify-center rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400">
-						<AlertTriangle class="h-5 w-5" />
-					</div>
-					<div>
-						<h3 id="reject-dialog-title" class="font-bold text-foreground text-base">
-							Reject Leave Request
-						</h3>
-						<p class="text-xs text-muted-foreground">{request.id} &bull; {employeeName}</p>
-					</div>
-				</div>
-
-				<button
-					type="button"
-					onclick={closeRejectModal}
-					class="rounded-lg p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
-				>
-					<X class="h-4 w-4" />
-				</button>
+<!-- Rejection Reason Dialog -->
+<Dialog.Root bind:open={isRejectModalOpen} onOpenChange={(val) => { if (!val) closeRejectModal(); }}>
+	<Dialog.Content class="sm:max-w-md">
+		<Dialog.Header class="flex flex-row items-center gap-2.5 space-y-0 pb-2">
+			<div class="flex h-9 w-9 items-center justify-center rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400">
+				<AlertTriangle class="h-5 w-5" />
 			</div>
+			<div>
+				<Dialog.Title class="text-base font-bold text-foreground">
+					Reject Leave Request
+				</Dialog.Title>
+				<Dialog.Description class="text-xs text-muted-foreground">
+					{request.id} &bull; {employeeName}
+				</Dialog.Description>
+			</div>
+		</Dialog.Header>
 
-			<p class="text-xs text-muted-foreground mb-3 leading-relaxed">
-				Please provide a clear reason for rejecting this leave application. This note will be recorded in the audit trail and shared with the applicant.
-			</p>
+		<p class="text-xs text-muted-foreground leading-relaxed">
+			Please provide a clear reason for rejecting this leave application. This note will be recorded in the audit trail and shared with the applicant.
+		</p>
 
-			<div class="space-y-1.5 mb-4">
-				<label for="rejection-reason" class="text-xs font-semibold text-foreground">
-					Rejection Reason <span class="text-rose-500">*</span>
-				</label>
-				<textarea
-					id="rejection-reason"
-					bind:value={rejectionReason}
-					placeholder="e.g. Critical sprint release scheduled during these dates; please coordinate with your team lead."
-					rows="3"
-					class="w-full rounded-xl border border-input bg-background p-3 text-xs text-foreground placeholder:text-muted-foreground focus:outline-hidden focus:ring-2 focus:ring-rose-500 shadow-2xs"
-				></textarea>
+		<div class="space-y-1.5 my-2">
+			<Label for="rejection-reason" class="text-xs font-semibold text-foreground">
+				Rejection Reason <span class="text-rose-500">*</span>
+			</Label>
+			<textarea
+				id="rejection-reason"
+				bind:value={rejectionReason}
+				placeholder="e.g. Critical sprint release scheduled during these dates; please coordinate with your team lead."
+				rows="3"
+				class="w-full rounded-md border border-input bg-transparent p-3 text-xs text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-none"
+			></textarea>
 
-				{#if rejectionError}
-					<p class="text-xs font-medium text-rose-500 mt-1 flex items-center gap-1">
-						<AlertCircle class="h-3.5 w-3.5 shrink-0" />
-						{rejectionError}
-					</p>
+			{#if rejectionError}
+				<p class="text-xs font-medium text-rose-500 mt-1 flex items-center gap-1">
+					<AlertCircle class="h-3.5 w-3.5 shrink-0" />
+					{rejectionError}
+				</p>
+			{/if}
+		</div>
+
+		<Dialog.Footer class="flex items-center justify-end gap-2 pt-2 border-t border-border/60">
+			<Button
+				type="button"
+				variant="outline"
+				size="sm"
+				onclick={closeRejectModal}
+				disabled={isRejecting}
+			>
+				Cancel
+			</Button>
+
+			<Button
+				type="button"
+				variant="destructive"
+				size="sm"
+				onclick={submitReject}
+				disabled={isRejecting || rejectionReason.trim().length < 3}
+				class="gap-1.5"
+			>
+				{#if isRejecting}
+					<Loader2 class="h-3.5 w-3.5 animate-spin" />
+					<span>Rejecting...</span>
+				{:else}
+					<XCircle class="h-3.5 w-3.5" />
+					<span>Confirm Rejection</span>
 				{/if}
-			</div>
+			</Button>
+		</Dialog.Footer>
+	</Dialog.Content>
+</Dialog.Root>
 
-			<div class="flex items-center justify-end gap-2.5 pt-2 border-t border-border/60">
-				<button
-					type="button"
-					onclick={closeRejectModal}
-					disabled={isRejecting}
-					class="rounded-xl border border-border px-4 py-2 text-xs font-semibold text-foreground hover:bg-muted transition-colors disabled:opacity-50"
-				>
-					Cancel
-				</button>
+<!-- Attachment Preview Dialog -->
+<Dialog.Root bind:open={showAttachmentModal}>
+	<Dialog.Content class="sm:max-w-lg">
+		<Dialog.Header class="flex flex-row items-center gap-2 pb-2 space-y-0">
+			<FileText class="h-5 w-5 text-primary" />
+			<Dialog.Title class="text-sm font-bold text-foreground">Attachment Preview</Dialog.Title>
+		</Dialog.Header>
 
-				<button
-					type="button"
-					onclick={submitReject}
-					disabled={isRejecting || rejectionReason.trim().length < 3}
-					class="inline-flex items-center gap-1.5 rounded-xl bg-rose-600 px-4 py-2 text-xs font-bold text-white hover:bg-rose-700 transition-colors disabled:opacity-50"
-				>
-					{#if isRejecting}
-						<Loader2 class="h-3.5 w-3.5 animate-spin" />
-						<span>Rejecting...</span>
-					{:else}
-						<XCircle class="h-3.5 w-3.5" />
-						<span>Confirm Rejection</span>
-					{/if}
-				</button>
-			</div>
+		<div class="my-3 rounded-xl border border-border/80 bg-muted/30 p-4 text-center">
+			<p class="font-mono text-xs text-foreground font-semibold mb-1">
+				{request.attachmentUrl}
+			</p>
+			<p class="text-xs text-muted-foreground">
+				Attached supporting medical or legal documentation for Leave Request {request.id}.
+			</p>
 		</div>
-	</div>
-{/if}
 
-<!-- Attachment Preview Modal -->
-{#if showAttachmentModal && request.attachmentUrl}
-	<div
-		class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs animate-in fade-in duration-200"
-		role="dialog"
-		aria-modal="true"
-	>
-		<div class="w-full max-w-lg rounded-2xl border border-border bg-card p-6 shadow-2xl animate-in zoom-in-95 duration-200">
-			<div class="flex items-center justify-between pb-3 border-b border-border/60">
-				<div class="flex items-center gap-2">
-					<FileText class="h-5 w-5 text-primary" />
-					<h4 class="font-bold text-foreground text-sm">Attachment Preview</h4>
-				</div>
-				<button
-					type="button"
-					onclick={() => (showAttachmentModal = false)}
-					class="rounded-lg p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
-				>
-					<X class="h-4 w-4" />
-				</button>
-			</div>
-
-			<div class="my-4 rounded-xl border border-border/80 bg-muted/30 p-4 text-center">
-				<p class="font-mono text-xs text-foreground font-semibold mb-1">
-					{request.attachmentUrl}
-				</p>
-				<p class="text-xs text-muted-foreground">
-					Attached supporting medical or legal documentation for Leave Request {request.id}.
-				</p>
-			</div>
-
-			<div class="flex justify-end pt-2">
-				<button
-					type="button"
-					onclick={() => (showAttachmentModal = false)}
-					class="rounded-xl bg-primary px-4 py-2 text-xs font-bold text-primary-foreground hover:bg-primary/90 transition-colors"
-				>
-					Close Preview
-				</button>
-			</div>
-		</div>
-	</div>
-{/if}
+		<Dialog.Footer class="flex justify-end pt-2">
+			<Button
+				size="sm"
+				onclick={() => (showAttachmentModal = false)}
+			>
+				Close Preview
+			</Button>
+		</Dialog.Footer>
+	</Dialog.Content>
+</Dialog.Root>
