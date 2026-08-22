@@ -19,6 +19,29 @@ export const DEFAULT_LEAVE_QUOTA_CONFIG: LeaveQuotaConfig = {
 	sickLeave: 7
 };
 
+/**
+ * Calculates working business days between start and end dates (excluding Saturdays and Sundays).
+ */
+export function calculateBusinessDays(startDateStr: string, endDateStr: string): number {
+	const start = new Date(startDateStr + 'T00:00:00Z');
+	const end = new Date(endDateStr + 'T00:00:00Z');
+
+	if (isNaN(start.getTime()) || isNaN(end.getTime()) || start > end) {
+		return 0;
+	}
+
+	let count = 0;
+	const cur = new Date(start);
+	while (cur <= end) {
+		const day = cur.getUTCDay();
+		if (day !== 0 && day !== 6) {
+			count++;
+		}
+		cur.setUTCDate(cur.getUTCDate() + 1);
+	}
+	return count;
+}
+
 export interface LeaveBalance {
 	id: string;
 	employeeId: string;
