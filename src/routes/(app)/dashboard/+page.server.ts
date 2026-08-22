@@ -17,9 +17,9 @@ export const load: PageServerLoad = async () => {
 			.where(eq(schema.attendance.date, todayStr));
 
 		const presentToday = todayAttendance.filter(
-			(a) => a.status === 'present' || a.status === 'half_day'
+			(a: any) => a.status === 'present' || a.status === 'half_day'
 		).length;
-		const onLeaveToday = todayAttendance.filter((a) => a.status === 'on_leave').length;
+		const onLeaveToday = todayAttendance.filter((a: any) => a.status === 'on_leave').length;
 		const absentToday = Math.max(0, totalEmployees - presentToday - onLeaveToday);
 		const attendanceRatePercent =
 			totalEmployees > 0 ? Math.round((presentToday / totalEmployees) * 100) : 0;
@@ -34,7 +34,7 @@ export const load: PageServerLoad = async () => {
 
 		// 4. Calculate total monthly payroll cost from employees table
 		const totalMonthlyPayroll = employees.reduce(
-			(sum, e) => sum + (e.monthlyWage || 0),
+			(sum: number, e: any) => sum + (e.monthlyWage || 0),
 			0
 		);
 

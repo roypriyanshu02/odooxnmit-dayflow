@@ -19,7 +19,7 @@ export const load: PageServerLoad = async () => {
 
 		// 2. Fetch breaks for today
 		const todayStr = '2026-08-22';
-		const todayAttendance = records.find((r) => r.date === todayStr);
+		const todayAttendance = records.find((r: any) => r.date === todayStr);
 
 		let todayBreaks: any[] = [];
 		if (todayAttendance) {
