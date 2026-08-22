@@ -3,6 +3,7 @@
 	import { palette } from '$lib/state/palette.svelte';
 	import RoleSwitcher from './RoleSwitcher.svelte';
 	import SystrayStopwatch from '$lib/components/attendance/SystrayStopwatch.svelte';
+	import { Button } from '$lib/components/ui/button';
 	import type { Component } from 'svelte';
 	import {
 		LayoutDashboard,
@@ -11,14 +12,9 @@
 		CalendarDays,
 		ReceiptText,
 		Search,
-		Timer,
 		Command,
 		Menu,
-		X,
-		Sparkles,
-		Flame,
-		CheckCircle2,
-		Layers
+		X
 	} from '@lucide/svelte';
 
 	let mobileMenuOpen = $state(false);
@@ -28,16 +24,6 @@
 			mobileMenuOpen = false;
 		}
 	}
-
-	// Systray attendance widget simulated state
-	let isCheckedIn = $state(true);
-	let elapsedMinutes = $state(264); // 4h 24m
-
-	const formatTimer = $derived(() => {
-		const hours = Math.floor(elapsedMinutes / 60);
-		const mins = elapsedMinutes % 60;
-		return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
-	});
 
 	interface NavLink {
 		href: string;
@@ -60,35 +46,14 @@
 		}
 		return currentPath.startsWith(href);
 	}
-
-	function toggleAttendance() {
-		isCheckedIn = !isCheckedIn;
-	}
 </script>
 
 <svelte:window onkeydown={handleKeydown} />
 
 <header class="sticky top-0 z-40 w-full border-b border-border bg-background/95 backdrop-blur-md supports-[backdrop-filter]:bg-background/60">
 	<div class="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-		<!-- Left: Brand Logo & Navigation Links -->
+		<!-- Left: Navigation Links -->
 		<div class="flex items-center gap-6 md:gap-8">
-			<!-- Brand Logo -->
-			<a
-				href="/dashboard"
-				class="group flex items-center gap-2.5 transition-transform hover:scale-[1.02] focus:outline-hidden"
-			>
-				<div class="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 text-white shadow-md shadow-purple-500/20 ring-1 ring-purple-400/30">
-					<Layers class="h-4 w-4 transition-transform duration-300 group-hover:rotate-12" />
-				</div>
-				<div class="flex flex-col">
-					<div class="flex items-center gap-1.5 leading-none">
-						<span class="font-bold text-foreground tracking-tight text-base font-sans">Dayflow</span>
-						<span class="rounded bg-primary/10 px-1 py-0.2 text-[9px] font-bold uppercase tracking-wider text-primary border border-primary/20">HRMS</span>
-					</div>
-					<span class="text-[10px] text-muted-foreground font-medium">Enterprise Suite</span>
-				</div>
-			</a>
-
 			<!-- Desktop Nav Tabs -->
 			<nav class="hidden md:flex items-center gap-1">
 				{#each navLinks as link (link.href)}
@@ -117,9 +82,10 @@
 		<!-- Right: Command Palette Trigger, Systray Attendance Stopwatch, Role Switcher -->
 		<div class="flex items-center gap-2 sm:gap-3">
 			<!-- Quick Search / Command Palette Button -->
-			<button
-				type="button"
-				class="hidden sm:flex items-center gap-2 rounded-lg border border-border/80 bg-muted/40 px-2.5 py-1.5 text-xs text-muted-foreground transition-all hover:border-border hover:bg-muted hover:text-foreground focus:outline-hidden focus:ring-2 focus:ring-ring"
+			<Button
+				variant="outline"
+				size="sm"
+				class="hidden sm:flex items-center gap-2 h-8 px-2.5 text-xs text-muted-foreground font-normal bg-muted/40 hover:bg-muted"
 				onclick={() => palette.open()}
 				title="Search modules & actions (Cmd+K / Ctrl+K)"
 			>
@@ -128,7 +94,7 @@
 				<kbd class="flex items-center gap-0.5 rounded border border-border bg-background px-1.5 py-0.5 font-mono text-[10px] font-semibold text-muted-foreground shadow-2xs">
 					<Command class="h-2.5 w-2.5" /> K
 				</kbd>
-			</button>
+			</Button>
 
 			<!-- Live Systray Attendance Stopwatch Widget -->
 			<SystrayStopwatch />
@@ -137,18 +103,19 @@
 			<RoleSwitcher />
 
 			<!-- Mobile Menu Toggle Button -->
-			<button
-				type="button"
-				class="flex md:hidden items-center justify-center rounded-lg border border-border p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground"
+			<Button
+				variant="outline"
+				size="icon-sm"
+				class="flex md:hidden"
 				onclick={() => (mobileMenuOpen = !mobileMenuOpen)}
 				aria-label="Toggle Navigation Menu"
 			>
 				{#if mobileMenuOpen}
-					<X class="h-5 w-5" />
+					<X class="h-4 w-4" />
 				{:else}
-					<Menu class="h-5 w-5" />
+					<Menu class="h-4 w-4" />
 				{/if}
-			</button>
+			</Button>
 		</div>
 	</div>
 
@@ -156,9 +123,9 @@
 	{#if mobileMenuOpen}
 		<div class="border-b border-border bg-card px-4 py-3 md:hidden animate-in slide-in-from-top-2 duration-150">
 			<!-- Mobile Search Trigger -->
-			<button
-				type="button"
-				class="flex w-full items-center justify-between rounded-lg border border-border bg-muted/40 px-3 py-2 text-xs text-muted-foreground mb-3"
+			<Button
+				variant="outline"
+				class="w-full justify-between h-9 text-xs text-muted-foreground mb-3 font-normal"
 				onclick={() => {
 					mobileMenuOpen = false;
 					palette.open();
@@ -169,7 +136,7 @@
 					<span>Search modules or commands...</span>
 				</div>
 				<kbd class="rounded border border-border bg-background px-1.5 py-0.5 font-mono text-[10px]">⌘K</kbd>
-			</button>
+			</Button>
 
 			<!-- Mobile Nav Links -->
 			<div class="space-y-1">
