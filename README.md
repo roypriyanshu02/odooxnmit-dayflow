@@ -92,4 +92,4 @@ bun run build
 ---
 
 ## 📄 License
-MIT License. Built for the Odoo x NMIT Hackathon 2026.
+MIT License. Built for the Odoo x NMIT Hackathon 2026.🎶
